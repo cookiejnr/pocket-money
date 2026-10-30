@@ -169,16 +169,209 @@ textarea{width:100%;height:110px;font-family:ui-monospace,Menlo,monospace;font-s
 @media (max-aspect-ratio: 1/1), (max-width: 860px){
   .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
   .side{display:grid;grid-template-columns:1.1fr 1fr;grid-template-areas:"title title" "stage stats" "stage actions" "foot foot";gap:12px 16px}
-  h1{grid-area:title} h1 small{display:inline;margin-left:8px}
+  h1 small{display:inline;margin-left:8px}
   .stage{grid-area:stage;height:auto;min-height:230px} .stats{grid-area:stats} .actions{grid-area:actions} .side-foot{grid-area:foot}
   .pigbtn{width:220px;height:160px}
+}
+
+/* ---------- mode switch ---------- */
+.titlebar{display:flex;flex-direction:column;gap:8px}
+.modes{display:flex;background:#f3e3cf;border-radius:14px;padding:3px;gap:3px}
+.modes button{flex:1;border:0;background:none;border-radius:11px;padding:7px 6px;font-size:15px;font-weight:600;color:var(--muted)}
+.modes button.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(110,70,30,.14)}
+body.mode-env .app.pig{display:none}
+body:not(.mode-env) .envapp{display:none}
+input,textarea,select{-webkit-user-select:text;user-select:text;font-family:inherit}
+
+/* ---------- envelopes: side ---------- */
+.envapp .lbl{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+.e-card2{background:var(--card);border-radius:24px;padding:14px 18px;box-shadow:var(--shadow)}
+.e-dates{font-size:19px;font-weight:600;margin-top:2px}
+.e-dots{display:flex;gap:4px;margin:10px 0 8px}
+.e-dots i{flex:1;height:10px;border-radius:5px;background:#f1e4d4}
+.e-dots i.done{background:#ffc4d3}
+.e-dots i.today{background:var(--pink);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--pink)}
+.e-due{font-size:15px;color:#5d4a3e;line-height:1.35}
+.e-due.now{color:var(--pinkdark);font-weight:700}
+.e-big{font-size:40px;font-weight:700;line-height:1.05;letter-spacing:-.5px}
+.e-mini{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin-top:7px;color:#5d4a3e}
+.e-mini b{font-size:17px;color:var(--ink)}
+.act.due{background:linear-gradient(#ffe27a,#ffc93c);box-shadow:0 4px 0 #d9a21c,0 8px 16px rgba(217,162,28,.25);animation:glow 1.8s ease-in-out infinite}
+@keyframes glow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.08)}}
+
+/* ---------- envelopes: main ---------- */
+.e-main{display:flex;flex-direction:column;min-height:0;gap:12px}
+.e-tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.e-tabs button{border:0;background:#fff;border-radius:14px;padding:10px 18px;font-size:17px;font-weight:600;box-shadow:0 3px 0 #ead6bf}
+.e-tabs button.on{background:var(--ink);color:#fff;box-shadow:0 3px 0 #1d140f}
+.e-tabs .sp{flex:1}
+.e-tabs .hint{font-size:14px;color:var(--muted)}
+.e-view{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;border-radius:24px;position:relative}
+.e-view.tbl{background:#fff;box-shadow:var(--shadow)}
+.e-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px;padding:4px 4px 24px}
+
+.e-card{position:relative;border:0;text-align:left;background:#fff;border-radius:18px;padding:50px 16px 14px;box-shadow:var(--shadow);
+  overflow:hidden;min-height:196px;display:flex;flex-direction:column;transition:transform .08s}
+.e-card:active{transform:scale(.97)}
+.e-card::before{content:'';position:absolute;left:0;right:0;top:0;height:42px;background:var(--c);clip-path:polygon(0 0,100% 0,50% 100%)}
+.e-card::after{content:'';position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--c);opacity:.55}
+.e-stamp{position:absolute;right:11px;top:9px;width:44px;height:50px;background:#fff;border:2px dashed var(--c);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:25px;transform:rotate(5deg);box-shadow:0 2px 4px rgba(0,0,0,.08)}
+.e-name{font-size:19px;font-weight:700;line-height:1.1;padding-right:42px}
+.e-left{font-size:33px;font-weight:700;margin-top:6px;letter-spacing:-.5px;line-height:1.1}
+.e-of{font-size:14px;color:var(--muted)}
+.e-bar{height:12px;border-radius:6px;background:#f3e8db;margin:10px 0 9px;overflow:hidden}
+.e-bar i{display:block;height:100%;background:var(--c);border-radius:6px;transition:width .4s}
+.e-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#5d4a3e;gap:6px;flex-wrap:wrap}
+.e-pill{font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px;background:#f6ede2;color:#7a6556;white-space:nowrap}
+.e-pill.keep{background:#e3f4ea;color:#17703d}
+.e-for{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.3}
+.e-card.low .e-left{color:var(--down)}
+.e-card.sav{grid-column:span 2;background:linear-gradient(135deg,#fff 0%,#fff0f4 100%)}
+.e-card.sav .e-left{font-size:44px;color:var(--pinkdark)}
+.e-savrow{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:14px;color:#5d4a3e}
+.e-savrow b{display:block;font-size:19px;color:var(--ink)}
+.e-empty{padding:30px;text-align:center;color:var(--muted);font-size:18px}
+
+/* ---------- envelopes: counts table ---------- */
+.e-table thead tr.band th{height:30px;top:0;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);background:#fffaf3;border-bottom:1px solid var(--line);font-weight:600}
+.e-table thead tr.dates th{top:30px;height:54px}
+.e-table thead tr.band th.corner,.e-table thead tr.dates th.corner{left:0;z-index:5}
+.e-table thead tr.band th.cur{color:var(--pinkdark);background:#fff4f7}
+.e-table .gs{border-left:3px solid #efdcc6}
+.e-table th.env{position:sticky;left:0;background:#fff;z-index:2;min-width:196px;text-align:left;padding:6px 12px;border-right:2px solid var(--line);height:64px}
+.e-table tbody tr:nth-child(even) th.env{background:var(--zebra)}
+.e-table tr.arch th.env{opacity:.55}
+.e-rowh{display:flex;align-items:center;gap:10px}
+.e-dot{flex:none;width:38px;height:38px;border-radius:11px;background:var(--c);display:flex;align-items:center;justify-content:center;font-size:21px}
+.e-rowh b{display:block;font-size:16px;line-height:1.15}
+.e-rowh small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.e-table td.ec{min-width:116px;height:64px;padding:0 6px}
+.e-table td.ec .a{font-size:20px;font-weight:600;display:inline-block}
+.e-table td.ec .d{font-size:12px;margin-top:2px}
+.e-table td.ec .z{color:#e3d4c3;font-size:20px}
+.e-table td.st{background:repeating-linear-gradient(45deg,#fffdf9,#fffdf9 7px,#fbf2e6 7px,#fbf2e6 14px) !important;color:#6d5848}
+.e-table td.tap{cursor:pointer}
+.e-table td.tap:active{background:#ffdfe8 !important}
+.e-table tr.savr th.env{background:#fff4f7}
+.e-table tr.savr td{background:#fffafb}
+.tapme{display:inline-block;font-size:13px;font-weight:600;color:var(--pinkdark);background:#fff;border:2px dashed #f7b6c7;padding:6px 10px;border-radius:12px}
+.e-table tr.total td .sub{font-size:11px;color:var(--muted)}
+.e-table thead .stl{font-size:14px;color:var(--muted)}
+
+/* ---------- envelopes: modals ---------- */
+.modal.wide{max-width:680px}
+.modal.xwide{max-width:860px}
+.e-mhead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.e-mhead .e-dot{width:48px;height:48px;font-size:27px;border-radius:14px}
+.e-mhead h2{margin:0;font-size:24px;line-height:1.1}
+.e-mhead .sub{font-size:14px;color:var(--muted)}
+.e-mhead .x{margin-left:auto;border:0;background:#f6ede2;border-radius:12px;width:40px;height:40px;font-size:20px;flex:none}
+.e-info{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.e-info div{background:#fffaf3;border:1.5px solid var(--line);border-radius:14px;padding:7px 12px;font-size:13px;color:var(--muted)}
+.e-info b{display:block;font-size:18px;color:var(--ink)}
+.seg{display:flex;gap:6px;margin:12px 0}
+.seg button{flex:1;border:0;border-radius:14px;padding:11px 8px;font-size:16px;font-weight:600;background:#f6ede2;color:#6d5848}
+.seg button.on{background:var(--ink);color:#fff}
+.pad-disp{font-size:50px;font-weight:700;text-align:center;background:#fffaf3;border-radius:18px;padding:8px;margin-bottom:12px;border:2px solid var(--line);letter-spacing:-.5px}
+.pad-disp.fresh{color:#b9a693}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.keys button{border:0;border-radius:16px;background:#fff;box-shadow:0 4px 0 #ead6bf,0 6px 12px rgba(110,70,30,.08);font-size:28px;font-weight:600;padding:13px 0}
+.keys button:active{transform:translateY(3px);box-shadow:0 1px 0 #ead6bf}
+.coins{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.coins button{border:0;background:#fffaf3;border:2px solid var(--line);border-radius:14px;height:84px;position:relative;display:flex;align-items:center;justify-content:center;padding:0}
+.coins button svg{display:block;filter:drop-shadow(0 2px 2px rgba(80,50,20,.2))}
+.coins button:active svg{transform:scale(.9)}
+.coins .cnt{position:absolute;top:4px;right:5px;background:var(--ink);color:#fff;border-radius:10px;font-size:13px;padding:1px 7px;font-weight:700}
+.coins.minus button{border-color:#f3b3b3;background:#fff5f5}
+.tbar{display:flex;gap:8px;margin-top:10px}
+.tbar .mbtn{flex:1}
+.mbtn.on{background:var(--down);color:#fff}
+.mrow.sp{justify-content:space-between;margin-top:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
+.chips button{border:2px solid var(--line);background:#fff;border-radius:14px;padding:6px 10px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px}
+.chips button small{color:var(--muted);font-weight:500}
+.chips button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.chips button.on small{color:#e9dccf}
+.chips button:disabled{opacity:.35}
+.fld{display:block;margin:10px 0}
+.fld span{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
+.fld input[type=text],.fld input[type=date],.fld input:not([type]){width:100%;font-size:17px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+.money-in{width:110px;font-size:16px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;text-align:right;color:var(--ink);background:#fff}
+.money-in.bad{border-color:var(--down)}
+.emo{display:flex;flex-wrap:wrap;gap:6px}
+.emo button{width:42px;height:42px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:22px;padding:0}
+.emo button.on{border-color:var(--ink);background:#fff4e6}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw button{width:34px;height:34px;border-radius:17px;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);padding:0}
+.sw button.on{box-shadow:0 0 0 3px var(--ink)}
+.tgl{border:0;border-radius:14px;padding:8px 12px;font-size:14px;font-weight:600;background:#f6ede2;color:#7a6556;white-space:nowrap}
+.tgl.on{background:#e3f4ea;color:#17703d}
+.etbl{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:15px}
+.etbl th,.etbl td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;position:static;height:auto;background:none !important;white-space:nowrap}
+.etbl thead th{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:600;border-bottom:2px solid var(--line)}
+.etbl .l{text-align:left}
+.etbl .nm{display:flex;align-items:center;gap:8px;font-weight:600;white-space:normal}
+.etbl .nm .e-dot{width:30px;height:30px;font-size:17px;border-radius:9px}
+.etbl tr.savt td{background:#fff4f7 !important;font-weight:700}
+.etbl tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
+.etbl .arrow{color:var(--pinkdark);font-weight:700}
+.glist{list-style:none;padding:0;margin:0 0 10px}
+.glist li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
+.glist li .nm{flex:1;display:flex;align-items:center;gap:8px;font-weight:600;min-width:0}
+.glist li .e-dot{width:30px;height:30px;font-size:17px;border-radius:9px}
+.glist .mbtn{padding:6px 11px;font-size:14px}
+.glist .arr{padding:6px 9px;font-size:13px;background:#f6ede2}
+.glist .arr:disabled{opacity:.3}
+.glist .amt{color:#5d4a3e;font-size:14px;white-space:nowrap}
+.callout{background:#fff8e1;border:2px solid #f5dc8a;border-radius:14px;padding:10px 14px;font-size:15px;line-height:1.45;margin:8px 0 12px;color:#5d4a3e}
+.callout.pink{background:#fff0f4;border-color:#f7c3d1}
+.party{text-align:center;padding:6px 0 4px}
+.party .bigsave{font-size:58px;font-weight:700;color:var(--pinkdark);line-height:1.05;margin:6px 0}
+.party .em{font-size:60px;line-height:1}
+.confetti{position:fixed;top:-20px;width:10px;height:14px;border-radius:2px;z-index:200;pointer-events:none}
+.pinpad .pin-dots{display:flex;justify-content:center;gap:14px;margin:12px 0 16px}
+.pinpad .pin-dots i{width:18px;height:18px;border-radius:9px;border:2px solid var(--ink)}
+.pinpad .pin-dots i.f{background:var(--ink)}
+.hist{font-size:14px;color:#5d4a3e}
+.hist td,.hist th{font-size:14px}
+
+/* ---------- envelopes: print ---------- */
+.p-env svg{width:78px;height:58px;display:block}
+.p-bars{width:100%;border-collapse:collapse;font-size:10pt;margin-bottom:12px}
+.p-bars td{padding:3px 6px;border-bottom:1px solid #f1e6d8;vertical-align:middle}
+.p-bars td.n{width:130px;white-space:nowrap;font-weight:500}
+.p-bars td.v{width:150px;text-align:right;white-space:nowrap;font-size:9.5pt;color:#5d4a3e}
+.p-bar{height:13px;border-radius:7px;background:#f3e8db;overflow:hidden;display:flex}
+.p-bar i{display:block;height:100%}
+.p-key{font-size:9pt;color:#7a6556;margin:-4px 0 8px}
+.p-key i{display:inline-block;width:10px;height:10px;border-radius:3px;margin:0 4px 0 10px;vertical-align:-1px}
+
+
+.fld input.money-in{width:150px;display:inline-block}
+.tapme{white-space:nowrap;font-size:12px}
+.p-bars td.n{text-align:left}
+.p-bars td.v{text-align:right}
+@media (max-width: 860px){.etbl th,.etbl td{padding:6px 4px;font-size:14px}.etbl .tgl{padding:6px 8px;font-size:13px}}
+/* ---------- envelopes: portrait ---------- */
+@media (max-aspect-ratio: 1/1), (max-width: 860px){
+  .titlebar{grid-area:title;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+  .titlebar .modes{flex:0 0 300px}
+  .envapp .side{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"title title" "fn stats" "actions actions" "foot foot";gap:12px 16px}
+  .envapp .e-fnc{grid-area:fn} .envapp .e-stc{grid-area:stats} .envapp .actions{grid-area:actions;grid-template-columns:repeat(4,1fr)}
+  .envapp .actions .act.primary{grid-column:auto}
+  .envapp .actions .act.print{grid-column:auto}
+  .envapp .side-foot{grid-area:foot}
 }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app pig">
   <div class="side">
-    <h1>Oliver's <span>Pocket Money</span></h1>
+    <div class="titlebar">
+      <h1>Oliver's <span>Pocket Money</span></h1>
+      <div class="modes"><button data-mode="pig" class="on">🐷 Piggy bank</button><button data-mode="env">✉️ Envelopes</button></div>
+    </div>
     <div class="stage" id="stage">
       <div class="taphint">Tap the pig!</div>
       <button class="pigbtn" id="pig" aria-label="Piggy bank">
@@ -232,6 +425,47 @@ textarea{width:100%;height:110px;font-family:ui-monospace,Menlo,monospace;font-s
   </div>
   <div class="board" id="board"></div>
 </div>
+<div class="app envapp" id="envApp">
+  <div class="side">
+    <div class="titlebar">
+      <h1>Oliver's <span>Envelopes</span></h1>
+      <div class="modes"><button data-mode="pig">🐷 Piggy bank</button><button data-mode="env" class="on">✉️ Envelopes</button></div>
+    </div>
+    <div class="e-card2 e-fnc">
+      <div class="lbl">This fortnight</div>
+      <div class="e-dates" id="eDates">–</div>
+      <div class="e-dots" id="eDots"></div>
+      <div class="e-due" id="eDue"></div>
+    </div>
+    <div class="e-card2 e-stc">
+      <div class="lbl">Cash in all envelopes</div>
+      <div class="e-big" id="eTotal">$0.00</div>
+      <div class="e-mini"><span>🐷 Main Savings</span><b id="eSav">$0.00</b></div>
+      <div class="e-mini"><span>Spent this fortnight</span><b id="eSpent">$0.00</b></div>
+      <div class="e-mini" style="font-size:13px;margin-top:4px"><span id="eLast">No counts yet</span></div>
+    </div>
+    <div class="actions">
+      <button class="act primary" id="eCountBtn">New count</button>
+      <button class="act" id="eMoveBtn">Move money</button>
+      <button class="act" id="eFnBtn">New fortnight</button>
+      <button class="act print" id="ePrintBtn">Print</button>
+    </div>
+    <div class="side-foot">
+      <div class="warn" id="eWarn">This browser isn't saving. Ask a grown-up to make a backup.</div>
+      <button class="gear" id="eGrown">Grown-ups</button>
+    </div>
+  </div>
+  <div class="e-main">
+    <div class="e-tabs">
+      <button data-view="cards" class="on">Envelopes</button>
+      <button data-view="counts">Counts</button>
+      <span class="sp"></span>
+      <span class="hint" id="eHint"></span>
+    </div>
+    <div class="e-view" id="eView"></div>
+  </div>
+</div>
+<div class="overlay" id="eOv"><div class="modal" id="eMod"></div></div>
 <div id="printView"></div>
 <div class="toast" id="toast"></div>
 <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
@@ -439,7 +673,7 @@ function render(){
       (prev?chgHTML(total(c)-total(prev)):'<span class="chg same">first count</span>')+'</div></td>';
   });
   h+='<td class="fill"></td></tr></tbody></table>';
-  if(!cols.length) h+='<div class="empty">Tap <b>&nbsp;New count&nbsp;</b> to start,<br>then tap each coin and note as you count it.</div>';
+  if(!cols.length) h+='<div class="empty"><div>Tap <b>New count</b> to start,<br>then tap each coin and note as you count it.</div></div>';
   $('board').innerHTML=h;
   $('board').classList.toggle('minus',takeAway);
 
@@ -625,6 +859,7 @@ function longDate(d){return d.toLocaleDateString('en-AU',{weekday:'long',day:'nu
 function shortDate(iso){return new Date(iso).toLocaleDateString('en-AU',{day:'numeric',month:'short'});}
 function chgTxt(diff){return diff>0?'<span class="up">▲ '+fmt(diff)+'</span>':diff<0?'<span class="down">▼ '+fmt(-diff)+'</span>':'<span class="same">no change</span>';}
 function buildPrint(){
+  if(document.body.classList.contains('mode-env')) return;
   var all=state.counts, latest=all[all.length-1], prev=all[all.length-2];
   var pig=$('pig').innerHTML.replace(/pig(Body|Head)/g,'pp$1');
   var h='<div class="p-head"><div class="p-pig">'+pig+'</div><div><div class="p-title">Oliver\'s <span>Pocket Money</span></div><div class="p-sub">Printed '+longDate(new Date())+'</div></div></div>';
@@ -687,6 +922,754 @@ $('printBtn').addEventListener('click',printNow);
 document.addEventListener('gesturestart',function(e){e.preventDefault();});
 
 load(); render();
+window.PM={DENOMS:DENOMS,BY:BY,moneySVG:moneySVG,coinSVG:coinSVG,noteSVG:noteSVG,sfx:sfx,fmt:fmt,toast:toast};
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var PM=window.PM;
+var fmt=PM.fmt, toast=PM.toast, sfx=PM.sfx, DENOMS=PM.DENOMS, BY=PM.BY;
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+// ---------- constants ----------
+var KEY='oliverEnvelopes.v1', MODEKEY='oliverPocketMoney.mode';
+var COLORS=['#f59e42','#ec6f8f','#5aa9e6','#7bc67b','#b48ee8','#f2c94c','#4fc1b8','#e57373','#8d9be8','#c49a6c','#9ccc65','#f48fb1','#ffb74d','#4db6ac'];
+var EMOJIS=['🔥','🎡','🛒','👕','💇','🅿️','🧒','🏊','🐾','🎒','🏠','✨','🍔','🎁','🚗','⚽','📚','🎮','🧾','🌱','✈️','🎂','🍿','🛠️','📱','💡','🎨','🦷','🐶','🐱'];
+var DEFAULTS=[['Gas','🔥',40],['Outings','🎡',140],['Costco','🛒',130],['Clothing','👕',80],['Hair','💇',70],['Parking','🅿️',40],
+  ['Oliver','🧒',90],['Pool','🏊',50],['Chloe Minnie','🐾',100],['School','🎒',150],['Council Rates','🏠',134],['Other','✨',400]];
+var FIRST_START='2026-10-22';
+
+// ---------- dates (local, YYYY-MM-DD) ----------
+function p2(n){return (n<10?'0':'')+n;}
+function ymd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
+function pd(s){var p=String(s).split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function addD(s,n){var d=pd(s);d.setDate(d.getDate()+n);return ymd(d);}
+function todayS(){return ymd(new Date());}
+function dayDiff(a,b){return Math.round((pd(b)-pd(a))/86400000);}
+function dShort(s){return pd(s).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});}
+function dNoDay(s){return pd(s).toLocaleDateString('en-AU',{day:'numeric',month:'short'});}
+function dLong(s){return pd(s).toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});}
+function tsDay(ts){return ymd(new Date(ts));}
+function ago(s){var n=dayDiff(s,todayS());return n===0?'today':n===1?'yesterday':n+' days ago';}
+function isDate(s){return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(pd(s));}
+
+// ---------- money text ----------
+function toCents(str){
+  str=String(str==null?'':str).replace(/[$,\s]/g,'');
+  if(str==='') return 0;
+  if(!/^\d*\.?\d{0,2}$/.test(str)) return NaN;
+  var p=str.split('.'), d=p[0]?parseInt(p[0],10):0, c=p[1]?parseInt((p[1]+'0').slice(0,2),10):0;
+  return d*100+c;
+}
+function plain(c){return (c/100).toFixed(2).replace(/\.00$/,'');}
+
+// ---------- state ----------
+var S=null, storageOK=true, view='cards';
+function fresh(){
+  var envs=[{id:'savings',name:'Main Savings',emoji:'🐷',color:'#ff7a9c',amount:0,keep:true,note:'',savings:true}];
+  DEFAULTS.forEach(function(d,i){envs.push({id:'e'+(i+1),name:d[0],emoji:d[1],color:COLORS[i%COLORS.length],amount:d[2]*100,keep:false,note:''});});
+  var base={}; envs.forEach(function(e){base[e.id]=e.amount;});
+  return {v:1,envs:envs,fns:[{id:1,start:FIRST_START,base:base,moves:[],swept:0,sweptFrom:{},prevLeft:{}}],counts:[],pin:'',setup:false,nextId:DEFAULTS.length+1};
+}
+function valid(p){
+  if(!p||p.v!==1||!Array.isArray(p.envs)||!Array.isArray(p.fns)||!Array.isArray(p.counts)||!p.fns.length) return false;
+  if(!p.envs.length||p.envs[0].id!=='savings') return false;
+  if(!p.envs.every(function(e){return e&&typeof e.id==='string'&&typeof e.name==='string'&&Number.isInteger(e.amount);})) return false;
+  if(!p.fns.every(function(f){return f&&isDate(f.start)&&f.base&&Array.isArray(f.moves);})) return false;
+  return p.counts.every(function(c){return c&&typeof c.ts==='number'&&c.vals&&typeof c.vals==='object';});
+}
+function load(){
+  try{
+    var s=localStorage.getItem(KEY);
+    if(s){var p=JSON.parse(s); if(valid(p)) S=p;}
+    localStorage.setItem(KEY+'.t','1'); localStorage.removeItem(KEY+'.t');
+  }catch(e){storageOK=false;}
+  if(!S) S=fresh();
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));storageOK=true;}catch(e){storageOK=false;}
+}
+
+// ---------- model ----------
+function env(id){for(var i=0;i<S.envs.length;i++) if(S.envs[i].id===id) return S.envs[i]; return null;}
+function sav(){return S.envs[0];}
+function activeEnvs(){return S.envs.filter(function(e){return !e.archived;});}
+function cur(){return S.fns[S.fns.length-1];}
+function fnById(id){for(var i=0;i<S.fns.length;i++) if(S.fns[i].id===id) return S.fns[i]; return null;}
+function fnCounts(f){return S.counts.filter(function(c){return c.fid===f.id;});}
+function openCount(){var c=S.counts[S.counts.length-1];return c&&c.fid===cur().id?c:null;}
+function endOf(f){return addD(f.start,13);}
+function dueDate(){return addD(cur().start,14);}
+function isDue(){return todayS()>=dueDate();}
+function nextStart(){
+  var due=dueDate(), t=todayS();
+  if(t<due) return due;
+  return addD(due,Math.floor(dayDiff(due,t)/14)*14);
+}
+// Money in an envelope at a point in time, inside fortnight f: last counted value (or the start), adjusted by moves since.
+function leftAt(f,eid,ts){
+  var v=f.base[eid]||0, t0=-1, cs=fnCounts(f);
+  for(var i=cs.length-1;i>=0;i--){var c=cs[i]; if(c.ts<=ts&&c.vals[eid]){v=c.vals[eid].amt;t0=c.ts;break;}}
+  f.moves.forEach(function(m){if(m.ts>t0&&m.ts<=ts){if(m.to===eid)v+=m.amt;if(m.from===eid)v-=m.amt;}});
+  return v;
+}
+function leftNow(eid){return leftAt(cur(),eid,Infinity);}
+function netMoves(f,eid){var n=0;f.moves.forEach(function(m){if(m.to===eid)n+=m.amt;if(m.from===eid)n-=m.amt;});return n;}
+function startPlus(f,eid){return (f.base[eid]||0)+netMoves(f,eid);}
+function spentIn(f,eid){return startPlus(f,eid)-leftAt(f,eid,Infinity);}
+function spentFn(f){var t=0;S.envs.forEach(function(e){if(!e.savings) t+=spentIn(f,e.id);});return t;}
+function totalNow(){var t=0;activeEnvs().forEach(function(e){t+=leftNow(e.id);});return t;}
+function everSwept(){var t=0;S.fns.forEach(function(f){t+=f.swept||0;});return t;}
+function hasData(eid){
+  if(S.fns.some(function(f){return f.base[eid];})) return true;
+  return S.counts.some(function(c){return c.vals[eid];});
+}
+function countDone(c){return activeEnvs().every(function(e){return c.vals[e.id];});}
+function countTotal(c){var t=0,n=0;for(var k in c.vals){t+=c.vals[k].amt;n++;}return {t:t,n:n};}
+
+// ---------- side ----------
+function renderSide(){
+  var f=cur(), t=todayS(), day=dayDiff(f.start,t)+1, due=dueDate();
+  $('eDates').textContent=dShort(f.start)+' → '+dShort(endOf(f));
+  var dots='';
+  for(var i=1;i<=14;i++) dots+='<i class="'+(i<day?'done':i===day?'today':'')+'"></i>';
+  $('eDots').innerHTML=dots;
+  var d=$('eDue');
+  if(t<f.start){d.className='e-due';d.textContent='Starts '+dLong(f.start);}
+  else if(t>=due){d.className='e-due now';d.textContent=t===due?'New fortnight is due today! 🎉':'New fortnight was due '+dShort(due)+'.';}
+  else {var left=dayDiff(t,due);d.className='e-due';d.innerHTML='Day <b>'+day+'</b> of 14 &middot; new fortnight in <b>'+left+'</b> day'+(left===1?'':'s')+' ('+dShort(due)+')';}
+  $('eTotal').textContent=fmt(totalNow());
+  $('eSav').textContent=fmt(leftNow('savings'));
+  $('eSpent').textContent=fmt(Math.max(0,spentFn(f)));
+  var cs=fnCounts(f), lc=cs[cs.length-1];
+  $('eLast').textContent=lc?'Last count '+dShort(tsDay(lc.ts))+' ('+ago(tsDay(lc.ts))+')':'No counts yet this fortnight';
+  var oc=openCount(), cb=$('eCountBtn');
+  cb.textContent=oc&&tsDay(oc.ts)===t&&!countDone(oc)?'Keep counting':'New count';
+  $('eFnBtn').classList.toggle('due',isDue());
+  $('eWarn').classList.toggle('show',!storageOK);
+}
+
+// ---------- cards ----------
+function cardHTML(e){
+  var f=cur(), L=leftNow(e.id);
+  if(e.savings){
+    var lastSweep=f.swept||0;
+    return '<button class="e-card sav" data-env="savings" style="--c:'+e.color+'"><div class="e-stamp">'+e.emoji+'</div>'+
+      '<div class="e-name">'+esc(e.name)+'</div><div class="e-left">'+fmt(L)+'</div>'+
+      '<div class="e-savrow"><div>Leftovers swept in on '+dNoDay(f.start)+'<b>'+(S.fns.length>1?fmt(lastSweep):'–')+'</b></div>'+
+      '<div>Swept in since we started<b>'+fmt(everSwept())+'</b></div>'+
+      (e.amount?'<div>Added each fortnight<b>'+fmt(e.amount)+'</b></div>':'')+'</div>'+
+      (e.note?'<div class="e-for" style="margin-top:8px">'+esc(e.note)+'</div>':'')+'</button>';
+  }
+  var st=startPlus(f,e.id), pct=st>0?Math.max(0,Math.min(1,L/st)):0, spent=st-L;
+  var low=st>0&&pct<0.2;
+  return '<button class="e-card'+(low?' low':'')+'" data-env="'+e.id+'" style="--c:'+e.color+'"><div class="e-stamp">'+e.emoji+'</div>'+
+    '<div class="e-name">'+esc(e.name)+'</div><div class="e-left">'+fmt(L)+'</div>'+
+    '<div class="e-of">left of '+fmt(st)+'</div><div class="e-bar"><i style="width:'+(pct*100).toFixed(1)+'%"></i></div>'+
+    (e.note?'<div class="e-for">'+esc(e.note)+'</div>':'')+
+    '<div class="e-foot"><span>'+(spent>0?'Spent '+fmt(spent):spent<0?'Found '+fmt(-spent)+' extra':'Nothing spent yet')+'</span>'+
+    '<span class="e-pill'+(e.keep?' keep':'')+'">'+(e.keep?'Keeps leftovers':'Leftovers → 🐷')+'</span></div></button>';
+}
+function renderCards(){
+  var h='<div class="e-grid">'+activeEnvs().map(cardHTML).join('')+'</div>';
+  var v=$('eView'); v.className='e-view'; v.innerHTML=h;
+  $('eHint').textContent='Which envelope should it come from? Tap one to see more.';
+}
+
+// ---------- counts table ----------
+function renderCounts(){
+  var envs=S.envs.filter(function(e){return !e.archived||hasData(e.id);});
+  var oc=openCount(), cols=[];
+  S.fns.slice().reverse().forEach(function(f){
+    var g=fnCounts(f).slice().reverse().map(function(c){return {t:'c',f:f,c:c};});
+    g.push({t:'s',f:f}); g[0].gs=true; g[0].span=g.length;
+    cols=cols.concat(g);
+  });
+  function val(col,e){
+    if(col.t==='s') return col.f.base.hasOwnProperty(e.id)?col.f.base[e.id]:null;
+    return col.c.vals[e.id]?col.c.vals[e.id].amt:null;
+  }
+  function prevVal(i,e){ // the next older value in the same fortnight
+    for(var j=i+1;j<cols.length&&cols[j].f===cols[i].f;j++){var v=val(cols[j],e); if(v!=null) return v;}
+    return null;
+  }
+  var h='<table class="e-table"><thead><tr class="band"><th class="corner"></th>';
+  cols.forEach(function(col){
+    if(!col.gs) return;
+    var isCur=col.f===cur();
+    h+='<th colspan="'+col.span+'" class="gs'+(isCur?' cur':'')+'">'+(isCur?'This fortnight':dNoDay(col.f.start)+' – '+dNoDay(endOf(col.f)))+'</th>';
+  });
+  h+='<th class="fill"></th></tr><tr class="dates"><th class="corner">Envelope</th>';
+  cols.forEach(function(col){
+    var cls=col.gs?'gs':'';
+    if(col.t==='s') h+='<th class="'+cls+'"><span class="stl">Start</span><span class="when">'+dShort(col.f.start)+'</span></th>';
+    else {
+      var act=col.c===oc, ds=tsDay(col.c.ts);
+      h+='<th class="'+cls+(act?' col-active':'')+'">'+(act?'<span class="chip">'+dShort(ds)+'</span>':dShort(ds))+'<span class="when">'+(act?'counting now':ago(ds))+'</span></th>';
+    }
+  });
+  h+='<th class="fill"></th></tr></thead><tbody>';
+  envs.forEach(function(e){
+    h+='<tr class="'+(e.savings?'savr':'')+(e.archived?' arch':'')+'"><th class="env"><div class="e-rowh" style="--c:'+e.color+'"><span class="e-dot">'+e.emoji+'</span><span><b>'+esc(e.name)+'</b><small>'+
+      (e.archived?'removed':e.savings?(e.amount?fmt(e.amount)+' added each fortnight':'Leftovers go here'):fmt(e.amount)+' a fortnight'+(e.keep?' · keeps':''))+'</small></span></div></th>';
+    cols.forEach(function(col,i){
+      var v=val(col,e), cls='ec'+(col.gs?' gs':'')+(col.t==='s'?' st':'');
+      var act=col.t==='c'&&col.c===oc&&!e.archived;
+      if(act) cls+=' col-active tap';
+      var inner;
+      if(v==null) inner=act?'<span class="tapme">Tap to count</span>':'<div class="z">–</div>';
+      else {
+        inner='<div class="a">'+fmt(v)+'</div>';
+        if(col.t==='c'){var pv=prevVal(i,e); if(pv!=null){var df=v-pv; inner+='<div class="d">'+(df<0?'<span class="chg down">▼ '+fmt(-df)+'</span>':df>0?'<span class="chg up">▲ '+fmt(df)+'</span>':'<span class="chg same">same</span>')+'</div>';}}
+        else if(col.f.prevLeft&&col.f.prevLeft[e.id]&&!e.savings&&col.f.sweptFrom&&!col.f.sweptFrom[e.id]) inner+='<div class="d" style="color:#17703d">incl. '+fmt(col.f.prevLeft[e.id])+' kept</div>';
+        else if(e.savings&&col.f.swept) inner+='<div class="d" style="color:var(--pinkdark)">+'+fmt(col.f.swept)+' swept</div>';
+      }
+      h+='<td class="'+cls+'"'+(act?' data-env="'+e.id+'"':'')+'>'+inner+'</td>';
+    });
+    h+='<td class="fill"></td></tr>';
+  });
+  h+='<tr class="total"><th>Total</th>';
+  cols.forEach(function(col,i){
+    var t=0,n=0; envs.forEach(function(e){var v=val(col,e); if(v!=null){t+=v;n++;}});
+    var missing=col.t==='c'&&col.c===oc?activeEnvs().length-Object.keys(col.c.vals).filter(function(k){var e=env(k);return e&&!e.archived;}).length:0;
+    h+='<td class="'+(col.gs?'gs ':'')+(col.t==='c'&&col.c===oc?'col-active':'')+'"><div class="tt">'+(n?fmt(t):'–')+'</div><div class="tc">'+
+      (missing>0?'<span class="sub">'+missing+' still to count</span>':col.t==='s'?'<span class="sub">start</span>':'')+'</div></td>';
+  });
+  h+='<td class="fill"></td></tr></tbody></table>';
+  var v=$('eView'); v.className='e-view tbl'; v.innerHTML=h;
+  $('eHint').textContent=oc?'Tap a pink square to count that envelope.':'Tap New count to add a column.';
+}
+
+function render(){
+  renderSide();
+  if(view==='cards') renderCards(); else renderCounts();
+  Array.prototype.forEach.call(document.querySelectorAll('.e-tabs button'),function(b){b.classList.toggle('on',b.getAttribute('data-view')===view);});
+}
+function setView(v){view=v;render();}
+
+// ---------- modal plumbing ----------
+var M=null; // current modal controller {click(el,a), input(el)}
+function openM(html,ctl,cls){var m=$('eMod');m.className='modal'+(cls?' '+cls:'');m.innerHTML=html;M=ctl||{};$('eOv').classList.add('show');m.scrollTop=0;}
+function closeM(){$('eOv').classList.remove('show');$('eMod').innerHTML='';M=null;}
+$('eOv').addEventListener('click',function(e){if(e.target===this&&!(M&&M.sticky)) closeM();});
+$('eMod').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b||!M) return;
+  var a=b.getAttribute('data-a'); if(a==='close'){closeM();return;}
+  if(M.click) M.click(b,a);
+});
+$('eMod').addEventListener('input',function(e){if(M&&M.input) M.input(e.target);});
+function head(e,sub){
+  return '<div class="e-mhead" style="--c:'+e.color+'"><span class="e-dot">'+e.emoji+'</span><div><h2>'+esc(e.name)+'</h2>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div><button class="x" data-a="close" aria-label="Close">✕</button></div>';
+}
+function keypad(){return '<div class="keys">'+['1','2','3','4','5','6','7','8','9','.','0','⌫'].map(function(k){return '<button data-a="key" data-k="'+k+'">'+k+'</button>';}).join('')+'</div>';}
+function applyKey(st,k){ // st.str, st.fresh
+  if(st.fresh){st.str='';st.fresh=false;}
+  var s=st.str;
+  if(k==='⌫') s=s.slice(0,-1);
+  else if(k==='.'){if(s.indexOf('.')<0) s=(s||'0')+'.';}
+  else {
+    var dot=s.indexOf('.');
+    if(dot>=0&&s.length-dot>2) return;
+    if(dot<0&&s.replace(/^0+/,'').length>=6) return;
+    s=(s==='0'?'':s)+k;
+  }
+  st.str=s;
+}
+function dispTxt(st){if(!st.str) return '$0'; var p=st.str.split('.'); return '$'+p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(p.length>1?'.'+p[1]:'');}
+
+// ---------- count pad ----------
+function startCount(){
+  var c={id:Date.now(),ts:Date.now(),fid:cur().id,vals:{}};
+  S.counts.push(c); save(); view='counts'; render();
+  openPad(activeEnvs()[0].id);
+}
+function askCount(){
+  var oc=openCount(), t=todayS();
+  if(oc&&tsDay(oc.ts)===t&&!countDone(oc)){view='counts';render();openPad(nextUncounted(null)||activeEnvs()[0].id);return;}
+  openM('<h2>Start a new count?</h2><p>A new column for <b>'+dShort(t)+'</b> will appear. Count each envelope one at a time. You can type the total or tap the coins and notes.</p>'+
+    (oc&&tsDay(oc.ts)===t?'<div class="callout">You already counted today. Starting another count adds a second column for today.</div>':'')+
+    '<div class="mrow"><button class="mbtn" data-a="close">Cancel</button><button class="mbtn go" data-a="go">Start counting</button></div>',
+    {click:function(b,a){if(a==='go'){closeM();startCount();}}});
+}
+function nextUncounted(after){
+  var c=openCount(); if(!c) return null;
+  var list=activeEnvs(), i=after?list.findIndex(function(e){return e.id===after;}):-1;
+  for(var j=1;j<=list.length;j++){var e=list[(i+j)%list.length]; if(!c.vals[e.id]&&e.id!==after) return e.id;}
+  return null;
+}
+function openPad(eid){
+  var c=openCount(); if(!c){toast('Tap New count first!');return;}
+  var e=env(eid), ex=c.vals[eid], f=cur();
+  var prevTs=c.ts-1, before=leftAt(f,eid,prevTs);
+  var st={mode:ex&&ex.items?'tap':'type',str:ex?plain(ex.amt):'',fresh:!!ex,items:ex&&ex.items?JSON.parse(JSON.stringify(ex.items)):{},undo:[],take:false};
+  var list=activeEnvs(), idx=list.findIndex(function(x){return x.id===eid;})+1;
+  function tapTotal(){var t=0;DENOMS.forEach(function(d){t+=(st.items[d.k]||0)*d.c;});return t;}
+  function amount(){return st.mode==='tap'?tapTotal():toCents(st.str);}
+  function draw(){
+    var nx=nextUncounted(eid), nxe=nx?env(nx):null;
+    var h=head(e,'Envelope '+idx+' of '+list.length+' &middot; counting '+dShort(tsDay(c.ts)))+
+      '<div class="e-info"><div>Should have about<b>'+fmt(before)+'</b></div><div>Started the fortnight with<b>'+fmt(startPlus(f,eid))+'</b></div>'+(e.note?'<div>For<b style="font-size:15px">'+esc(e.note)+'</b></div>':'')+'</div>'+
+      '<div class="seg"><button data-a="mode" data-m="type" class="'+(st.mode==='type'?'on':'')+'">⌨️ Type the total</button><button data-a="mode" data-m="tap" class="'+(st.mode==='tap'?'on':'')+'">🪙 Count coins &amp; notes</button></div>';
+    if(st.mode==='type') h+='<div class="pad-disp'+(st.fresh?' fresh':'')+'" id="pDisp">'+dispTxt(st)+'</div>'+keypad();
+    else {
+      h+='<div class="pad-disp" id="pDisp">'+fmt(tapTotal())+'</div><div class="coins'+(st.take?' minus':'')+'">';
+      DENOMS.forEach(function(d){var n=st.items[d.k]||0; h+='<button data-a="coin" data-k="'+d.k+'" aria-label="'+d.k+'">'+(d.type==='coin'?PM.coinSVG(d,1.9,false):PM.noteSVG(d,0.6,false))+(n?'<span class="cnt">'+n+'</span>':'')+'</button>';});
+      h+='</div><div class="tbar"><button class="mbtn" data-a="cundo">Oops (undo)</button><button class="mbtn'+(st.take?' on':'')+'" data-a="take">'+(st.take?'Taking away…':'Take away')+'</button><button class="mbtn" data-a="cclear">Start again</button></div>';
+    }
+    h+='<div class="mrow sp"><button class="mbtn" data-a="zero">It\'s empty ($0)</button><span style="display:flex;gap:10px;flex-wrap:wrap">'+
+      '<button class="mbtn" data-a="save">Save</button>'+(nxe?'<button class="mbtn go" data-a="next">Save &amp; next: '+esc(nxe.name)+' →</button>':'<button class="mbtn go" data-a="save">Save &amp; finish</button>')+'</span></div>';
+    openM(h,ctl,'wide');
+  }
+  function commit(amt){
+    c.vals[eid]=st.mode==='tap'&&amt===tapTotal()&&amt>0?{amt:amt,items:st.items}:{amt:amt};
+    save(); render();
+  }
+  function finishOrNext(goNext){
+    var nx=nextUncounted(eid);
+    if(goNext&&nx){openPad(nx);return;}
+    closeM();
+    if(countDone(c)){sfx.oink();toast('Count finished! Total '+fmt(countTotal(c).t));}
+    else if(nx) toast('Saved. '+(activeEnvs().length-Object.keys(c.vals).length)+' still to count');
+  }
+  var ctl={sticky:true,click:function(b,a){
+    if(a==='mode'){var m=b.getAttribute('data-m'); if(m!==st.mode){if(m==='type'){st.str=tapTotal()?plain(tapTotal()):st.str;st.fresh=false;} st.mode=m; draw();}}
+    else if(a==='key'){applyKey(st,b.getAttribute('data-k')); var d=$('pDisp'); d.textContent=dispTxt(st); d.classList.remove('fresh');}
+    else if(a==='coin'){
+      var k=b.getAttribute('data-k'), dd=BY[k], n=st.items[k]||0;
+      if(st.take){if(!n){toast('There are no '+k+' to take away');return;} st.items[k]=n-1; st.undo.push({k:k,d:-1}); sfx.plop();}
+      else {st.items[k]=n+1; st.undo.push({k:k,d:1}); if(dd.type==='coin') sfx.clink(dd.metal==='silver'); else sfx.swish();}
+      if(!st.items[k]) delete st.items[k];
+      draw();
+    }
+    else if(a==='cundo'){var u=st.undo.pop(); if(!u){toast('Nothing to undo');return;} var nn=(st.items[u.k]||0)-u.d; if(nn>0) st.items[u.k]=nn; else delete st.items[u.k]; draw();}
+    else if(a==='take'){st.take=!st.take; draw();}
+    else if(a==='cclear'){st.items={};st.undo=[];draw();}
+    else if(a==='zero'){st.mode='type';st.str='0';commit(0);finishOrNext(true);}
+    else if(a==='save'||a==='next'){
+      var amt=amount(); if(isNaN(amt)){toast('That amount doesn\'t look right');return;}
+      commit(amt); finishOrNext(a==='next');
+    }
+  }};
+  draw();
+}
+
+// ---------- envelope detail ----------
+function openDetail(eid){
+  var e=env(eid), f=cur(), cs=fnCounts(f);
+  var h=head(e,e.savings?'Where the leftovers go':fmt(e.amount)+' each fortnight &middot; '+(e.keep?'keeps its leftovers':'leftovers go to Main Savings'));
+  if(e.note) h+='<div class="callout pink"><b>Use it for:</b> '+esc(e.note)+'</div>';
+  h+='<div class="e-info"><div>In it now<b>'+fmt(leftNow(eid))+'</b></div><div>Fortnight start<b>'+fmt(f.base[eid]||0)+'</b></div>'+
+    (e.savings?'':'<div>Spent so far<b>'+fmt(Math.max(0,spentIn(f,eid)))+'</b></div>')+'</div>';
+  var rows=[];
+  cs.forEach(function(c){if(c.vals[eid]) rows.push({ts:c.ts,txt:'Counted',amt:fmt(c.vals[eid].amt)});});
+  f.moves.forEach(function(m){
+    if(m.to===eid) rows.push({ts:m.ts,txt:'Moved in from '+esc(env(m.from)?env(m.from).name:'?')+(m.why?' ('+esc(m.why)+')':''),amt:'+'+fmt(m.amt)});
+    if(m.from===eid) rows.push({ts:m.ts,txt:'Moved out to '+esc(env(m.to)?env(m.to).name:'?')+(m.why?' ('+esc(m.why)+')':''),amt:'−'+fmt(m.amt)});
+  });
+  rows.sort(function(a,b){return a.ts-b.ts;});
+  h+='<div class="sec">This fortnight</div><table class="etbl hist"><tbody><tr><td class="l">'+dShort(f.start)+'</td><td class="l">Start</td><td>'+fmt(f.base[eid]||0)+'</td></tr>'+
+    rows.map(function(r){return '<tr><td class="l">'+dShort(tsDay(r.ts))+'</td><td class="l">'+r.txt+'</td><td>'+r.amt+'</td></tr>';}).join('')+'</tbody></table>';
+  if(!e.savings&&S.fns.length>1){
+    var past='';
+    for(var i=S.fns.length-1;i>=1&&i>=S.fns.length-6;i--){
+      var nf=S.fns[i], pf=S.fns[i-1], lf=nf.prevLeft?nf.prevLeft[eid]:undefined;
+      if(lf===undefined) continue;
+      var sw=nf.sweptFrom&&nf.sweptFrom[eid];
+      past+='<tr><td class="l">'+dShort(pf.start)+' – '+dShort(endOf(pf))+'</td><td>'+fmt(startPlus(pf,eid))+'</td><td>'+fmt(lf)+'</td><td class="l">'+(lf?(sw?'<span class="arrow">→ 🐷 Savings</span>':'Kept'):'–')+'</td></tr>';
+    }
+    if(past) h+='<div class="sec">Past fortnights</div><table class="etbl hist"><thead><tr><th class="l">Fortnight</th><th>Had</th><th>Left over</th><th class="l">Went to</th></tr></thead><tbody>'+past+'</tbody></table>';
+  }
+  h+='<div class="mrow"><button class="mbtn" data-a="edit">Edit (grown-ups)</button>'+(openCount()&&!e.archived?'<button class="mbtn" data-a="count">Count it</button>':'')+'<button class="mbtn go" data-a="close">Done</button></div>';
+  openM(h,{click:function(b,a){
+    if(a==='edit') withPin(function(){openEdit(eid,function(){openDetail(eid);});});
+    else if(a==='count'){view='counts';render();openPad(eid);}
+  }},'wide');
+}
+
+// ---------- move money ----------
+function openMove(preFrom){
+  var st={from:preFrom||null,to:null,str:'',fresh:false,why:''};
+  function chips(which){
+    return '<div class="chips">'+activeEnvs().map(function(e){
+      var L=leftNow(e.id), dis=(which==='from'&&L<=0)||(which==='to'&&e.id===st.from);
+      return '<button data-a="'+which+'" data-id="'+e.id+'" class="'+(st[which]===e.id?'on':'')+'"'+(dis?' disabled':'')+'>'+e.emoji+' '+esc(e.name)+(which==='from'?' <small>'+fmt(L)+'</small>':'')+'</button>';
+    }).join('')+'</div>';
+  }
+  function draw(){
+    var h='<div class="e-mhead"><div><h2>Move money</h2><div class="sub">Run out in one envelope? Borrow from another, and move the real cash too.</div></div><button class="x" data-a="close">✕</button></div>'+
+      '<div class="sec">Take it from</div>'+chips('from')+'<div class="sec">Put it in</div>'+chips('to')+
+      '<div class="sec">How much?</div><div class="pad-disp" id="pDisp">'+dispTxt(st)+'</div>'+keypad()+
+      '<label class="fld"><span>Why? (optional)</span><input id="mWhy" type="text" maxlength="60" value="'+esc(st.why)+'" placeholder="e.g. birthday present"></label>'+
+      '<div class="mrow"><button class="mbtn" data-a="close">Cancel</button><button class="mbtn go" data-a="do">Move it</button></div>';
+    openM(h,ctl,'wide');
+  }
+  var ctl={click:function(b,a){
+    if(a==='from'||a==='to'){st[a]=b.getAttribute('data-id'); if(st.from===st.to) st.to=null; st.why=$('mWhy').value; draw();}
+    else if(a==='key'){applyKey(st,b.getAttribute('data-k'));$('pDisp').textContent=dispTxt(st);}
+    else if(a==='do'){
+      var amt=toCents(st.str);
+      if(!st.from||!st.to){toast('Pick both envelopes');return;}
+      if(!amt||isNaN(amt)){toast('Type how much to move');return;}
+      var L=leftNow(st.from);
+      if(amt>L){toast(env(st.from).name+' only has '+fmt(L));return;}
+      cur().moves.push({id:Date.now(),ts:Date.now(),from:st.from,to:st.to,amt:amt,why:$('mWhy').value.trim()});
+      save(); closeM(); render(); toast('Moved '+fmt(amt)+' from '+env(st.from).name+' to '+env(st.to).name);
+    }
+  }};
+  draw();
+}
+
+// ---------- new fortnight ----------
+function plan(){
+  var rows=[], swept=0, s=sav();
+  activeEnvs().forEach(function(e){
+    if(e.savings) return;
+    var L=leftNow(e.id), sw=e.keep?0:L;
+    swept+=sw; rows.push({e:e,left:L,sweep:sw,add:e.amount,start:(e.keep?L:0)+e.amount});
+  });
+  var sl=leftNow('savings');
+  return {rows:rows,swept:swept,savLeft:sl,savAdd:s.amount,savStart:sl+swept+s.amount,start:nextStart()};
+}
+function askFortnight(){
+  var f=cur(), cs=fnCounts(f), lc=cs[cs.length-1], t=todayS(), ns=nextStart();
+  var h='<h2>Start a new fortnight?</h2>';
+  if(t<dueDate()) h+='<div class="callout">The new fortnight isn\'t due until <b>'+dLong(dueDate())+'</b>. You can still start it early.</div>';
+  if(!lc) h+='<p>There\'s been <b>no count</b> this fortnight, so the leftovers will be what each envelope started with. Best to count first.</p>';
+  else if(tsDay(lc.ts)!==t) h+='<p>The last count was <b>'+dShort(tsDay(lc.ts))+'</b> ('+ago(tsDay(lc.ts))+'). If money has been spent since, count again first so the leftovers are right.</p>';
+  else if(!countDone(lc)) h+='<p>Today\'s count isn\'t finished yet. Envelopes you haven\'t counted use their last known amount.</p>';
+  else h+='<p>Today\'s count is done. Next we work out what\'s left in each envelope, sweep the leftovers into Main Savings, and refill every envelope.</p>';
+  var fresh=lc&&tsDay(lc.ts)===t&&countDone(lc);
+  h+='<div class="mrow">'+(fresh?'':'<button class="mbtn" data-a="count">Count first</button>')+'<button class="mbtn'+(fresh?' go':'')+'" data-a="go">'+(fresh?'Next →':'Use what we have →')+'</button></div>';
+  openM(h,{click:function(b,a){
+    if(a==='count'){closeM();askCount();}
+    else if(a==='go') showPlan();
+  }});
+}
+function showPlan(){
+  function draw(){
+    var p=plan();
+    var h='<div class="e-mhead"><div><h2>New fortnight: '+dShort(p.start)+'</h2><div class="sub">Tap a rule to change it. Then do the real envelopes to match.</div></div><button class="x" data-a="close">✕</button></div>'+
+      '<table class="etbl"><thead><tr><th class="l">Envelope</th><th>Left over</th><th class="l">Leftovers</th><th>To 🐷</th><th>New cash</th><th>Starts with</th></tr></thead><tbody>';
+    p.rows.forEach(function(r){
+      h+='<tr><td class="l"><span class="nm" style="--c:'+r.e.color+'"><span class="e-dot">'+r.e.emoji+'</span>'+esc(r.e.name)+'</span></td><td>'+fmt(r.left)+'</td>'+
+        '<td class="l"><button class="tgl'+(r.e.keep?' on':'')+'" data-a="rule" data-id="'+r.e.id+'">'+(r.e.keep?'Keep':'→ Savings')+'</button></td>'+
+        '<td class="arrow">'+(r.sweep?fmt(r.sweep):'–')+'</td><td>+'+fmt(r.add)+'</td><td><b>'+fmt(r.start)+'</b></td></tr>';
+    });
+    h+='<tr class="savt"><td class="l"><span class="nm"><span class="e-dot" style="background:'+sav().color+'">🐷</span>Main Savings</span></td><td>'+fmt(p.savLeft)+'</td><td></td><td class="arrow">+'+fmt(p.swept)+'</td><td>'+(p.savAdd?'+'+fmt(p.savAdd):'–')+'</td><td>'+fmt(p.savStart)+'</td></tr>';
+    var cash=p.rows.reduce(function(t,r){return t+r.add;},0)+p.savAdd;
+    h+='</tbody><tfoot><tr><td class="l">New cash needed</td><td></td><td></td><td></td><td>'+fmt(cash)+'</td><td></td></tr></tfoot></table>'+
+      '<div class="callout"><b>Do it for real:</b> 1. Take the leftovers out of the “→ Savings” envelopes and put <b>'+fmt(p.swept)+'</b> into Main Savings. 2. Put the new cash into each envelope.</div>'+
+      '<div class="mrow"><button class="mbtn" data-a="close">Not yet</button><button class="mbtn go" data-a="do">Done – start the fortnight</button></div>';
+    openM(h,ctl,'xwide');
+  }
+  var ctl={sticky:true,click:function(b,a){
+    if(a==='rule'){var e=env(b.getAttribute('data-id')); e.keep=!e.keep; save(); draw();}
+    else if(a==='do') doFortnight();
+  }};
+  draw();
+}
+function doFortnight(){
+  var p=plan(), base={}, sweptFrom={}, prevLeft={};
+  p.rows.forEach(function(r){base[r.e.id]=r.start; prevLeft[r.e.id]=r.left; if(r.sweep) sweptFrom[r.e.id]=r.sweep;});
+  base.savings=p.savStart; prevLeft.savings=p.savLeft;
+  var id=S.fns.reduce(function(m,f){return Math.max(m,f.id);},0)+1;
+  S.fns.push({id:id,start:p.start,base:base,moves:[],swept:p.swept,sweptFrom:sweptFrom,prevLeft:prevLeft});
+  save(); view='cards'; render();
+  var best=p.rows.filter(function(r){return r.sweep>0;}).sort(function(a,b){return b.sweep-a.sweep;}).slice(0,3);
+  openM('<div class="party"><div class="em">🎉🐷</div><h2 style="margin-top:8px">This fortnight we saved</h2><div class="bigsave">'+fmt(p.swept)+'</div>'+
+    '<p>Main Savings now has <b>'+fmt(p.savStart)+'</b>.'+(best.length?'<br>Most left over: '+best.map(function(r){return r.e.emoji+' '+esc(r.e.name)+' '+fmt(r.sweep);}).join(', ')+'.':'')+'</p>'+
+    '<p class="note">New fortnight: '+dShort(p.start)+' – '+dShort(addD(p.start,13))+'</p></div><div class="mrow"><button class="mbtn go" data-a="close">Yay!</button></div>');
+  sfx.oink(); confetti();
+}
+function confetti(){
+  var cols=['#ff7a9c','#ffc93c','#5aa9e6','#7bc67b','#b48ee8'];
+  for(var i=0;i<60;i++){
+    var c=document.createElement('div'); c.className='confetti'; c.style.left=(Math.random()*100)+'vw'; c.style.background=cols[i%cols.length];
+    document.body.appendChild(c);
+    var dur=1800+Math.random()*1500, x=(Math.random()*160-80);
+    if(c.animate) c.animate([{transform:'translate(0,0) rotate(0)'},{transform:'translate('+x+'px,'+(window.innerHeight+40)+'px) rotate('+(Math.random()*720)+'deg)'}],{duration:dur,delay:Math.random()*400,easing:'cubic-bezier(.3,.6,.6,1)',fill:'forwards'});
+    (function(el){setTimeout(function(){el.remove();},dur+500);})(c);
+  }
+}
+
+// ---------- PIN ----------
+function withPin(fn){
+  if(!S.pin){fn();return;}
+  var st='';
+  function draw(){
+    openM('<div class="pinpad"><h2 style="text-align:center">Grown-ups only</h2><p style="text-align:center">Type the PIN</p><div class="pin-dots">'+
+      [0,1,2,3].map(function(i){return '<i class="'+(i<st.length?'f':'')+'"></i>';}).join('')+'</div>'+
+      '<div class="keys">'+['1','2','3','4','5','6','7','8','9','','0','⌫'].map(function(k){return k?'<button data-a="k" data-k="'+k+'">'+k+'</button>':'<span></span>';}).join('')+'</div>'+
+      '<div class="mrow" style="margin-top:14px"><button class="mbtn" data-a="close">Cancel</button></div></div>',ctl);
+  }
+  var ctl={click:function(b,a){
+    if(a!=='k') return; var k=b.getAttribute('data-k');
+    if(k==='⌫') st=st.slice(0,-1); else if(st.length<4) st+=k;
+    if(st.length===4){ if(st===S.pin){fn();return;} toast('Wrong PIN'); st=''; }
+    draw();
+  }};
+  draw();
+}
+
+// ---------- grown-ups ----------
+function grownUps(){withPin(gu);}
+function gu(){
+  var f=cur(), act=activeEnvs(), arch=S.envs.filter(function(e){return e.archived;});
+  var h='<div class="e-mhead"><div><h2>Grown-ups</h2><div class="sub">Envelopes, the fortnight, counts and backup</div></div><button class="x" data-a="close">✕</button></div>';
+  h+='<div class="sec">Envelopes</div><ul class="glist">';
+  act.forEach(function(e,i){
+    h+='<li><span class="nm" style="--c:'+e.color+'"><span class="e-dot">'+e.emoji+'</span>'+esc(e.name)+'</span>'+
+      '<span class="amt">'+(e.savings?(e.amount?fmt(e.amount)+'/fn':''):fmt(e.amount)+'/fn')+'</span>'+
+      (e.savings?'':'<span class="e-pill'+(e.keep?' keep':'')+'">'+(e.keep?'Keeps':'→ 🐷')+'</span>')+
+      (e.savings?'':'<button class="mbtn arr" data-a="up" data-id="'+e.id+'"'+(i<=1?' disabled':'')+'>▲</button><button class="mbtn arr" data-a="down" data-id="'+e.id+'"'+(i===act.length-1?' disabled':'')+'>▼</button>')+
+      '<button class="mbtn" data-a="edit" data-id="'+e.id+'">Edit</button></li>';
+  });
+  var tot=act.reduce(function(t,e){return t+e.amount;},0);
+  h+='</ul><div class="mrow" style="justify-content:space-between;align-items:center"><span class="note">New cash each fortnight: <b>'+fmt(tot)+'</b></span><button class="mbtn go" data-a="add">+ Add envelope</button></div>';
+  if(arch.length){
+    h+='<div class="sec">Removed envelopes</div><p class="note">Kept so old counts still make sense.</p><ul class="glist">'+arch.map(function(e){
+      return '<li><span class="nm" style="--c:'+e.color+'"><span class="e-dot">'+e.emoji+'</span>'+esc(e.name)+'</span><button class="mbtn" data-a="restoreEnv" data-id="'+e.id+'">Bring back</button></li>';}).join('')+'</ul>';
+  }
+  h+='<div class="sec">This fortnight</div><p class="note">Started '+dLong(f.start)+'. Next one due '+dLong(dueDate())+'.</p>'+
+    '<div class="mrow" style="justify-content:flex-start"><button class="mbtn" data-a="fixStart">Fix starting amounts or date</button>'+
+    (S.fns.length>1&&!fnCounts(f).length&&!f.moves.length?'<button class="mbtn" data-a="undoFn">Undo the last new fortnight</button>':'')+'</div>';
+  var cs=fnCounts(f).slice().reverse();
+  h+='<div class="sec">Counts this fortnight</div>'+(cs.length?'<ul class="glist">'+cs.map(function(c){var ct=countTotal(c);
+      return '<li><span class="nm" style="font-weight:500">'+dShort(tsDay(c.ts))+' &middot; <b>'+fmt(ct.t)+'</b> <span class="note">('+ct.n+' envelopes)</span></span><button class="mbtn" data-a="delCount" data-id="'+c.id+'">Delete</button></li>';}).join('')+'</ul>':'<p class="note">No counts yet.</p>');
+  if(f.moves.length) h+='<div class="sec">Money moved this fortnight</div><ul class="glist">'+f.moves.slice().reverse().map(function(m){
+      return '<li><span class="nm" style="font-weight:500">'+dShort(tsDay(m.ts))+' &middot; '+fmt(m.amt)+' '+esc(env(m.from).name)+' → '+esc(env(m.to).name)+'</span><button class="mbtn" data-a="delMove" data-id="'+m.id+'">Delete</button></li>';}).join('')+'</ul>';
+  h+='<div class="sec">PIN</div><p class="note">'+(S.pin?'A PIN is set. Oliver needs it to get in here.':'No PIN yet. Set one so only grown-ups can change envelopes.')+'</p>'+
+    '<div class="mrow" style="justify-content:flex-start;align-items:center"><input class="money-in" id="gPin" inputmode="numeric" maxlength="4" placeholder="4 digits" style="text-align:center">'+
+    '<button class="mbtn" data-a="setPin">'+(S.pin?'Change PIN':'Set PIN')+'</button>'+(S.pin?'<button class="mbtn" data-a="clearPin">Remove PIN</button>':'')+'</div>';
+  h+='<div class="sec">Backup</div><p class="note">Copies all envelope data as text. Paste it into Notes to keep it safe, or to move it to another device.</p>'+
+    '<div class="mrow" style="justify-content:flex-start"><button class="mbtn" data-a="copy">Copy backup</button></div>'+
+    '<div class="sec">Restore</div><p class="note">Paste a backup here. This replaces all envelope data on this device.</p><textarea id="gRestore" placeholder="Paste backup text"></textarea>'+
+    '<div class="mrow" style="margin-top:10px"><button class="mbtn" data-a="restore">Restore</button><button class="mbtn go" data-a="close">Done</button></div>'+
+    '<p class="note" style="margin-top:12px">Saving on this device: '+(storageOK?'working':'<b style="color:#d23d3d">not working</b>')+'</p>';
+  openM(h,{click:function(b,a){
+    var id=b.getAttribute('data-id');
+    if(a==='edit') openEdit(id,gu);
+    else if(a==='add') openEdit(null,gu);
+    else if(a==='up'||a==='down'){
+      var i=S.envs.findIndex(function(e){return e.id===id;}), j=i, step=a==='up'?-1:1;
+      do{j+=step;}while(j>0&&j<S.envs.length&&S.envs[j].archived);
+      if(j<1||j>=S.envs.length) return;
+      var t=S.envs[i];S.envs[i]=S.envs[j];S.envs[j]=t; save(); render(); gu();
+    }
+    else if(a==='restoreEnv'){env(id).archived=false; save(); render(); gu(); toast('Envelope is back');}
+    else if(a==='fixStart') openFixStart();
+    else if(a==='undoFn'){
+      if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again to undo it';b.classList.add('danger');return;}
+      S.fns.pop(); save(); render(); gu(); toast('Back to the fortnight from '+dShort(cur().start));
+    }
+    else if(a==='delCount'||a==='delMove'){
+      if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again to delete';b.classList.add('danger');return;}
+      var n=Number(id);
+      if(a==='delCount') S.counts=S.counts.filter(function(c){return c.id!==n;});
+      else cur().moves=cur().moves.filter(function(m){return m.id!==n;});
+      save(); render(); gu(); toast('Deleted');
+    }
+    else if(a==='setPin'){var v=$('gPin').value.trim(); if(!/^\d{4}$/.test(v)){toast('The PIN needs 4 digits');return;} S.pin=v; save(); gu(); toast('PIN set');}
+    else if(a==='clearPin'){S.pin=''; save(); gu(); toast('PIN removed');}
+    else if(a==='copy'){
+      var txt=JSON.stringify(S);
+      var fb=function(){var tb=$('gRestore');tb.value=txt;tb.focus();tb.select();toast('Select all and copy the text in the box');};
+      try{navigator.clipboard.writeText(txt).then(function(){toast('Backup copied');},fb);}catch(err){fb();}
+    }
+    else if(a==='restore'){
+      var raw=$('gRestore').value.trim(), p;
+      try{p=JSON.parse(raw);}catch(err){toast('That backup text is not valid');return;}
+      if(!valid(p)){toast('That backup text is not valid');return;}
+      if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again to replace everything';b.classList.add('danger');return;}
+      S=p; save(); render(); closeM(); toast('Envelopes restored');
+    }
+  }},'wide');
+}
+
+function openEdit(id,back){
+  var isNew=!id, e=isNew?{id:null,name:'',emoji:EMOJIS[12],color:COLORS[S.envs.length%COLORS.length],amount:0,keep:false,note:''}:env(id);
+  var st={name:e.name,emoji:e.emoji,color:e.color,amount:plain(e.amount),keep:e.keep,note:e.note||'',now:'0'};
+  function draw(){
+    var h='<div class="e-mhead" style="--c:'+st.color+'"><span class="e-dot">'+st.emoji+'</span><div><h2>'+(isNew?'New envelope':'Edit '+esc(e.name))+'</h2></div><button class="x" data-a="cancel">✕</button></div>'+
+      '<label class="fld"><span>Name</span><input id="fName" type="text" maxlength="24" value="'+esc(st.name)+'"'+(e.savings?' disabled':'')+'></label>'+
+      '<div class="fld"><span>Picture</span><div class="emo">'+(e.savings?['🐷','🏦','💰','⭐'] :EMOJIS).map(function(m){return '<button data-a="emo" data-v="'+m+'" class="'+(m===st.emoji?'on':'')+'">'+m+'</button>';}).join('')+'</div></div>'+
+      '<div class="fld"><span>Colour</span><div class="sw">'+COLORS.concat(e.savings?['#ff7a9c']:[]).map(function(c){return '<button data-a="col" data-v="'+c+'" class="'+(c===st.color?'on':'')+'" style="background:'+c+'"></button>';}).join('')+'</div></div>'+
+      '<label class="fld"><span>'+(e.savings?'Extra added each fortnight (on top of leftovers)':'Cash put in each fortnight')+'</span>$ <input class="money-in" id="fAmt" inputmode="decimal" value="'+esc(st.amount)+'"></label>'+
+      (e.savings?'':'<div class="fld"><span>At the new fortnight</span><button class="tgl'+(st.keep?' on':'')+'" data-a="keep">'+(st.keep?'Keeps its leftovers (they build up)':'Leftovers go to Main Savings')+'</button></div>')+
+      '<label class="fld"><span>What it\'s for (helps Oliver choose)</span><input id="fNote" type="text" maxlength="80" value="'+esc(st.note)+'" placeholder="e.g. movies, day trips, ice-creams"></label>'+
+      (isNew?'<label class="fld"><span>Cash going in it right now</span>$ <input class="money-in" id="fNow" inputmode="decimal" value="'+esc(st.now)+'"></label>':'')+
+      '<div class="mrow sp">'+(isNew||e.savings?'<span></span>':'<button class="mbtn danger" data-a="remove">Remove envelope</button>')+
+      '<span style="display:flex;gap:10px"><button class="mbtn" data-a="cancel">Cancel</button><button class="mbtn go" data-a="save">Save</button></span></div>';
+    openM(h,ctl,'wide');
+  }
+  function grab(){st.name=$('fName').value;st.amount=$('fAmt').value;st.note=$('fNote').value;if($('fNow')) st.now=$('fNow').value;}
+  var ctl={sticky:true,click:function(b,a){
+    if(a==='cancel'){back?back():closeM();}
+    else if(a==='emo'){grab();st.emoji=b.getAttribute('data-v');draw();}
+    else if(a==='col'){grab();st.color=b.getAttribute('data-v');draw();}
+    else if(a==='keep'){grab();st.keep=!st.keep;draw();}
+    else if(a==='remove'){openRemove(e.id,back);}
+    else if(a==='save'){
+      grab();
+      var nm=st.name.trim(), amt=toCents(st.amount), now=isNew?toCents(st.now):0;
+      if(!nm){toast('Give it a name');return;}
+      if(isNaN(amt)||isNaN(now)){toast('Check the amounts');return;}
+      if(S.envs.some(function(x){return x!==e&&!x.archived&&x.name.toLowerCase()===nm.toLowerCase();})){toast('There\'s already an envelope called '+nm);return;}
+      if(isNew){
+        e={id:'e'+(S.nextId++),name:nm,emoji:st.emoji,color:st.color,amount:amt,keep:st.keep,note:st.note.trim()};
+        S.envs.push(e); cur().base[e.id]=now;
+      } else {e.name=nm;e.emoji=st.emoji;e.color=st.color;e.amount=amt;e.keep=st.keep;e.note=st.note.trim();}
+      save(); render(); toast(isNew?'Added '+nm:'Saved'); back?back():closeM();
+    }
+  }};
+  draw();
+}
+function openRemove(id,back){
+  var e=env(id), L=leftNow(id), st={to:'savings'};
+  function draw(){
+    var h=head(e,'Remove this envelope')+(L>0?'<p>It has <b>'+fmt(L)+'</b> in it. Where should that money go?</p><div class="chips">'+activeEnvs().filter(function(x){return x.id!==id;}).map(function(x){
+        return '<button data-a="to" data-id="'+x.id+'" class="'+(st.to===x.id?'on':'')+'">'+x.emoji+' '+esc(x.name)+'</button>';}).join('')+'</div>':'<p>It\'s empty, so no money needs to move.</p>')+
+      '<p class="note">Its old counts stay in the history. You can bring it back later from Grown-ups.</p>'+
+      '<div class="mrow"><button class="mbtn" data-a="cancel">Cancel</button><button class="mbtn danger" data-a="do">Remove '+esc(e.name)+'</button></div>';
+    openM(h,ctl);
+  }
+  var ctl={click:function(b,a){
+    if(a==='to'){st.to=b.getAttribute('data-id');draw();}
+    else if(a==='cancel'){openEdit(id,back);}
+    else if(a==='do'){
+      if(L>0) cur().moves.push({id:Date.now(),ts:Date.now(),from:id,to:st.to,amt:L,why:'envelope removed'});
+      e.archived=true; save(); render(); toast(e.name+' removed'+(L>0?', '+fmt(L)+' moved to '+env(st.to).name:'')); back?back():closeM();
+    }
+  }};
+  draw();
+}
+function openFixStart(){
+  var f=cur();
+  var h='<div class="e-mhead"><div><h2>This fortnight\'s start</h2><div class="sub">What was in each envelope when this fortnight began</div></div><button class="x" data-a="back">✕</button></div>'+
+    '<label class="fld"><span>Fortnight started on</span><input id="fsDate" type="date" value="'+f.start+'"></label>'+
+    '<table class="etbl"><tbody>'+activeEnvs().map(function(e){
+      return '<tr><td class="l"><span class="nm" style="--c:'+e.color+'"><span class="e-dot">'+e.emoji+'</span>'+esc(e.name)+'</span></td><td>$ <input class="money-in" data-id="'+e.id+'" inputmode="decimal" value="'+plain(f.base[e.id]||0)+'"></td></tr>';}).join('')+
+    '</tbody></table><div class="mrow"><button class="mbtn" data-a="back">Cancel</button><button class="mbtn go" data-a="save">Save</button></div>';
+  openM(h,{sticky:true,click:function(b,a){
+    if(a==='back') gu();
+    else if(a==='save'){
+      var d=$('fsDate').value, prev=S.fns[S.fns.length-2];
+      if(!isDate(d)){toast('Pick a date');return;}
+      if(prev&&d<=prev.start){toast('It must be after the previous fortnight began');return;}
+      var nb={}, bad=false;
+      Array.prototype.forEach.call(document.querySelectorAll('#eMod .money-in'),function(inp){var c=toCents(inp.value); inp.classList.toggle('bad',isNaN(c)); if(isNaN(c)) bad=true; else nb[inp.getAttribute('data-id')]=c;});
+      if(bad){toast('Check the red amounts');return;}
+      for(var k in nb) f.base[k]=nb[k];
+      f.start=d; save(); render(); gu(); toast('Saved');
+    }
+  }},'wide');
+}
+
+// ---------- first-run setup ----------
+function setup(){
+  var f=cur();
+  var h='<div class="e-mhead"><div><h2>Set up the envelopes</h2><div class="sub">Grown-up job, about a minute</div></div></div>'+
+    '<div class="callout">These come from your cash envelope list, without Groceries. <b>Council Rates $134</b> is the Council line from the budget sheet, not the cash list, so check it. Everything can be changed later in Grown-ups.</div>'+
+    '<label class="fld"><span>This fortnight started on</span><input id="suDate" type="date" value="'+f.start+'"></label>'+
+    '<table class="etbl"><thead><tr><th class="l">Envelope</th><th>Each fortnight</th><th>In it at the start</th><th class="l">Leftovers</th></tr></thead><tbody>'+
+    activeEnvs().map(function(e){
+      return '<tr><td class="l"><span class="nm" style="--c:'+e.color+'"><span class="e-dot">'+e.emoji+'</span>'+esc(e.name)+'</span></td>'+
+        '<td>$ <input class="money-in" data-k="amt" data-id="'+e.id+'" inputmode="decimal" value="'+plain(e.amount)+'"></td>'+
+        '<td>$ <input class="money-in" data-k="base" data-id="'+e.id+'" inputmode="decimal" value="'+plain(f.base[e.id]||0)+'"></td>'+
+        '<td class="l">'+(e.savings?'<span class="note">gets the leftovers</span>':'<button class="tgl'+(e.keep?' on':'')+'" data-a="keep" data-id="'+e.id+'">'+(e.keep?'Keep':'→ Savings')+'</button>')+'</td></tr>';
+    }).join('')+'</tbody></table>'+
+    '<p class="note">“In it at the start” is what each envelope had on the first day of this fortnight. It\'s how the app works out what\'s been spent. If you\'re not sure, leave it and your first count will show the real amounts.</p>'+
+    '<div class="mrow"><button class="mbtn go" data-a="save">Save &amp; start</button></div>';
+  openM(h,{sticky:true,click:function(b,a){
+    if(a==='keep'){var e=env(b.getAttribute('data-id'));e.keep=!e.keep;b.classList.toggle('on',e.keep);b.textContent=e.keep?'Keep':'→ Savings';}
+    else if(a==='save'){
+      var d=$('suDate').value; if(!isDate(d)){toast('Pick the start date');return;}
+      var bad=false, vals=[];
+      Array.prototype.forEach.call(document.querySelectorAll('#eMod .money-in'),function(inp){var c=toCents(inp.value);inp.classList.toggle('bad',isNaN(c));if(isNaN(c)) bad=true; vals.push([inp,c]);});
+      if(bad){toast('Check the red amounts');return;}
+      vals.forEach(function(v){var e=env(v[0].getAttribute('data-id')); if(v[0].getAttribute('data-k')==='amt') e.amount=v[1]; else f.base[e.id]=v[1];});
+      f.start=d; S.setup=true; save(); closeM(); render(); toast('All set! Do a count to see the real amounts.');
+    }
+  }},'xwide');
+}
+
+// ---------- print ----------
+function envIcon(){
+  return '<svg viewBox="0 0 78 58" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="8" width="72" height="46" rx="6" fill="#fff4e6" stroke="#e2577c" stroke-width="3"/>'+
+    '<path d="M5 12L39 36L73 12" fill="none" stroke="#e2577c" stroke-width="3" stroke-linejoin="round"/><circle cx="62" cy="44" r="7" fill="#ffc93c"/><text x="62" y="48" text-anchor="middle" font-size="10" font-weight="700" fill="#8f6514" font-family="Fredoka,sans-serif">$</text></svg>';
+}
+function buildPrint(){
+  if(!document.body.classList.contains('mode-env')) return;
+  var f=cur(), cs=fnCounts(f), envs=activeEnvs();
+  var h='<div class="p-head"><div class="p-env">'+envIcon()+'</div><div><div class="p-title">Oliver\'s <span>Envelopes</span></div><div class="p-sub">Fortnight '+dShort(f.start)+' – '+dShort(endOf(f))+' &middot; Printed '+new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</div></div></div>';
+  h+='<div class="p-sum"><div class="p-box main"><div class="l">Cash in all envelopes</div><div class="b">'+fmt(totalNow())+'</div></div>'+
+    '<div class="p-box"><div class="l">🐷 Main Savings</div><div class="b" style="font-size:17pt">'+fmt(leftNow('savings'))+'</div><div class="s">'+(f.swept?'+'+fmt(f.swept)+' swept in this fortnight':'&nbsp;')+'</div></div>'+
+    '<div class="p-box"><div class="l">Spent this fortnight</div><div class="b" style="font-size:17pt">'+fmt(Math.max(0,spentFn(f)))+'</div><div class="s">'+(cs.length?'last count '+dShort(tsDay(cs[cs.length-1].ts)):'no counts yet')+'</div></div></div>';
+  var show=cs.slice(-4).reverse();
+  h+='<div class="p-h2">This fortnight\'s counts</div><table class="p-table"><thead><tr><th class="d">Envelope</th>';
+  show.forEach(function(c,i){h+='<th class="'+(i===0?'now':'')+'">'+dShort(tsDay(c.ts))+'</th>';});
+  h+='<th>Start</th><th>Spent</th></tr></thead><tbody>';
+  var tS=0;
+  envs.forEach(function(e){
+    h+='<tr><th class="d">'+e.emoji+' '+esc(e.name)+'</th>';
+    show.forEach(function(c,i){var v=c.vals[e.id]; h+=v?'<td class="'+(i===0?'now':'')+'"><div class="n">'+fmt(v.amt)+'</div></td>':'<td class="z'+(i===0?' now':'')+'">–</td>';});
+    var sp=e.savings?null:spentIn(f,e.id); if(sp>0) tS+=sp;
+    h+='<td>'+fmt(f.base[e.id]||0)+'</td><td>'+(sp==null?'':sp>0?'<span class="down">'+fmt(sp)+'</span>':'<span class="same">–</span>')+'</td></tr>';
+  });
+  h+='<tr class="tot"><th class="d">Total</th>';
+  show.forEach(function(c,i){h+='<td class="'+(i===0?'now':'')+'">'+fmt(countTotal(c).t)+'</td>';});
+  h+='<td>'+fmt(envs.reduce(function(t,e){return t+(f.base[e.id]||0);},0))+'</td><td>'+fmt(tS)+'</td></tr></tbody></table>';
+  // bars: left vs spent
+  h+='<div class="p-h2">How full is each envelope?</div><div class="p-key"><i style="background:#ff9db5"></i>left <i style="background:#eadbc8"></i>spent</div><table class="p-bars">';
+  envs.forEach(function(e){
+    if(e.savings) return;
+    var st=startPlus(f,e.id), L=leftNow(e.id), pct=st>0?Math.max(0,Math.min(1,L/st)):0;
+    h+='<tr><td class="n">'+e.emoji+' '+esc(e.name)+'</td><td><div class="p-bar"><i style="width:'+(pct*100).toFixed(1)+'%;background:'+e.color+'"></i><i style="width:'+((1-pct)*100).toFixed(1)+'%;background:#eadbc8"></i></div></td><td class="v">'+fmt(L)+' left of '+fmt(st)+'</td></tr>';
+  });
+  h+='</table>';
+  var hist=S.fns.slice(1).slice(-8);
+  if(hist.length){
+    var W=700,H=150,top=22,bot=30,n=hist.length,max=Math.max.apply(null,hist.map(function(x){return x.swept||0;}).concat([1])),slot=W/n,bw=Math.min(56,slot*.6);
+    var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg"><line x1="0" y1="'+(H-bot)+'" x2="'+W+'" y2="'+(H-bot)+'" stroke="#d9c6b2" stroke-width="1.5"/>';
+    hist.forEach(function(x,i){var v=x.swept||0,bh=(H-top-bot)*(v/max),bx=slot*i+(slot-bw)/2,by=H-bot-bh;
+      svg+='<rect x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(bh,1).toFixed(1)+'" rx="6" fill="'+(i===n-1?'#ff7a9c':'#f7c3d1')+'"/>'+
+        '<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by-6).toFixed(1)+'" text-anchor="middle" font-size="12" font-weight="600" fill="#2e2219" font-family="Fredoka,sans-serif">'+fmt(v)+'</text>'+
+        '<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(H-bot+17)+'" text-anchor="middle" font-size="11" fill="#7a6556" font-family="Fredoka,sans-serif">'+pd(x.start).toLocaleDateString('en-AU',{day:'numeric',month:'short'})+'</text>';});
+    h+='<div class="p-h2">Leftovers swept into savings</div><div class="p-chart">'+svg+'</div>';
+  }
+  h+='<div class="p-foot"><span>Counted by Oliver</span><b>Every dollar has a job!</b></div>';
+  $('printView').innerHTML=h;
+}
+window.addEventListener('beforeprint',buildPrint);
+
+// ---------- mode ----------
+function setMode(m,silent){
+  document.body.classList.toggle('mode-env',m==='env');
+  Array.prototype.forEach.call(document.querySelectorAll('.modes button'),function(b){b.classList.toggle('on',b.getAttribute('data-mode')===m);});
+  try{localStorage.setItem(MODEKEY,m);}catch(e){}
+  if(m==='env'){render(); if(!S.setup&&!silent) setup();}
+}
+Array.prototype.forEach.call(document.querySelectorAll('.modes button'),function(b){b.addEventListener('click',function(){setMode(b.getAttribute('data-mode'));});});
+
+// ---------- wire up ----------
+document.querySelector('.e-tabs').addEventListener('click',function(e){var b=e.target.closest('button[data-view]'); if(b) setView(b.getAttribute('data-view'));});
+$('eView').addEventListener('click',function(e){
+  var t=e.target.closest('[data-env]'); if(!t) return;
+  if(view==='counts') openPad(t.getAttribute('data-env')); else openDetail(t.getAttribute('data-env'));
+});
+$('eCountBtn').addEventListener('click',askCount);
+$('eMoveBtn').addEventListener('click',function(){openMove();});
+$('eFnBtn').addEventListener('click',askFortnight);
+$('ePrintBtn').addEventListener('click',function(){buildPrint();try{window.print();}catch(e){toast('Printing isn\'t available here');}});
+$('eGrown').addEventListener('click',grownUps);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&document.body.classList.contains('mode-env')) render();});
+
+load();
+var m='pig'; try{m=localStorage.getItem(MODEKEY)||'pig';}catch(e){}
+setMode(m);
+window.ENV_DEBUG={get S(){return S;},plan:plan,leftNow:leftNow};
 })();
 </script>
 </body>
