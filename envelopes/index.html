@@ -269,7 +269,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text;font-family:inhe
 .chips button:disabled{opacity:.35}
 .fld{display:block;margin:10px 0}
 .fld span{display:block;font-size:14px;font-weight:600;margin-bottom:4px}
-.fld input[type=text],.fld input[type=date],.fld input:not([type]){width:100%;font-size:17px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+.fld input[type=text],.fld input[type=password],.fld input[type=date],.fld input:not([type]){width:100%;font-size:17px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
 .money-in{width:110px;font-size:16px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;text-align:right;color:var(--ink);background:#fff}
 .money-in.bad{border-color:var(--down)}
 .emo{display:flex;flex-wrap:wrap;gap:6px}
@@ -326,6 +326,9 @@ input,textarea,select{-webkit-user-select:text;user-select:text;font-family:inhe
 .p-bars td.n{text-align:left}
 .p-bars td.v{text-align:right}
 @media (max-width: 860px){.etbl th,.etbl td{padding:6px 4px;font-size:14px}.etbl .tgl{padding:6px 8px;font-size:13px}}
+.e-sync{font-size:12px;color:var(--muted);margin-top:4px;cursor:pointer;min-height:16px}
+.e-sync.error{color:var(--down)} .e-sync.offline{color:#b07a1a}
+.mbtn:disabled{opacity:.6}
 /* ---------- envelopes: portrait ---------- */
 @media (max-aspect-ratio: 1/1), (max-width: 860px){
   .titlebar{grid-area:title;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
@@ -365,6 +368,7 @@ input,textarea,select{-webkit-user-select:text;user-select:text;font-family:inhe
     <div class="side-foot">
       <div class="warn" id="eWarn">This browser isn't saving. Ask a grown-up to make a backup.</div>
       <button class="gear" id="eGrown">Grown-ups</button>
+      <div class="e-sync" id="eSync"></div>
     </div>
   </div>
   <div class="e-main">
@@ -618,9 +622,12 @@ function load(){
   var swap={'#ff7a9c':'#17a06b','#ec6f8f':'#5c6bc0','#f48fb1':'#78909c'};
   S.envs.forEach(function(e){if(swap[e.color]) e.color=swap[e.color];});
 }
-function save(){
+function saveLocal(){
   try{localStorage.setItem(KEY,JSON.stringify(S));storageOK=true;}catch(e){storageOK=false;}
 }
+function save(){saveLocal(); if(sess){sync.dirty=true; lsSet(SYNCKEY,sync); schedulePush();}}
+function touchEnvs(){S.envsM=Date.now();}
+function tomb(k,id){S.deleted=S.deleted||{}; (S.deleted[k]=S.deleted[k]||[]).push(id);}
 
 // ---------- model ----------
 function env(id){for(var i=0;i<S.envs.length;i++) if(S.envs[i].id===id) return S.envs[i]; return null;}
@@ -995,7 +1002,7 @@ function showPlan(){
     openM(h,ctl,'xwide');
   }
   var ctl={sticky:true,click:function(b,a){
-    if(a==='rule'){var e=env(b.getAttribute('data-id')); e.keep=!e.keep; save(); draw();}
+    if(a==='rule'){var e=env(b.getAttribute('data-id')); e.keep=!e.keep; touchEnvs(); save(); draw();}
     else if(a==='do') doFortnight();
   }};
   draw();
@@ -1004,8 +1011,8 @@ function doFortnight(){
   var p=plan(), base={}, sweptFrom={}, prevLeft={};
   p.rows.forEach(function(r){base[r.e.id]=r.start; prevLeft[r.e.id]=r.left; if(r.sweep) sweptFrom[r.e.id]=r.sweep;});
   base.savings=p.savStart; prevLeft.savings=p.savLeft;
-  var id=S.fns.reduce(function(m,f){return Math.max(m,f.id);},0)+1;
-  S.fns.push({id:id,start:p.start,base:base,moves:[],swept:p.swept,sweptFrom:sweptFrom,prevLeft:prevLeft});
+  var id=Date.now();
+  S.fns.push({id:id,m:id,start:p.start,base:base,moves:[],swept:p.swept,sweptFrom:sweptFrom,prevLeft:prevLeft});
   save(); view='cards'; render();
   var best=p.rows.filter(function(r){return r.sweep>0;}).sort(function(a,b){return b.sweep-a.sweep;}).slice(0,3);
   openM('<div class="party"><div class="em">🎉🐷</div><h2 style="margin-top:8px">This fortnight we saved</h2><div class="bigsave">'+fmt(p.swept)+'</div>'+
@@ -1070,7 +1077,9 @@ function gu(){
       return '<li><span class="nm" style="font-weight:500">'+dShort(tsDay(c.ts))+' &middot; <b>'+fmt(ct.t)+'</b> <span class="note">('+ct.n+' envelopes)</span></span><button class="mbtn" data-a="delCount" data-id="'+c.id+'">Delete</button></li>';}).join('')+'</ul>':'<p class="note">No counts yet.</p>');
   if(f.moves.length) h+='<div class="sec">Money moved this fortnight</div><ul class="glist">'+f.moves.slice().reverse().map(function(m){
       return '<li><span class="nm" style="font-weight:500">'+dShort(tsDay(m.ts))+' &middot; '+fmt(m.amt)+' '+esc(env(m.from).name)+' → '+esc(env(m.to).name)+'</span><button class="mbtn" data-a="delMove" data-id="'+m.id+'">Delete</button></li>';}).join('')+'</ul>';
-  h+='<div class="sec">PIN</div><p class="note">'+(S.pin?'A PIN is set. It is needed to get in here.':'No PIN yet. Set one so only grown-ups can change envelopes.')+'</p>'+
+  h+='<div class="sec">Family group</div>'+(sess?'<p class="note">This device is connected to <b>'+esc(sess.name)+'</b>. Changes save online and show on the other devices in the group.</p>'+
+    '<div class="mrow" style="justify-content:flex-start"><button class="mbtn" data-a="syncNow">Sync now</button><button class="mbtn" data-a="disc">Disconnect this device</button></div>':'<p class="note">Not connected.</p>');
+  h+='<div class="sec">Grown-ups PIN</div><p class="note">'+(S.pin?'A PIN is set. It is needed to get in here.':'No PIN yet. Set one so only grown-ups can change envelopes.')+'</p>'+
     '<div class="mrow" style="justify-content:flex-start;align-items:center"><input class="money-in" id="gPin" inputmode="numeric" maxlength="4" placeholder="4 digits" style="text-align:center">'+
     '<button class="mbtn" data-a="setPin">'+(S.pin?'Change PIN':'Set PIN')+'</button>'+(S.pin?'<button class="mbtn" data-a="clearPin">Remove PIN</button>':'')+'</div>';
   h+='<div class="sec">Backup</div><p class="note">Copies all envelope data as text. Paste it into Notes to keep it safe, or to move it to another device.</p>'+
@@ -1086,23 +1095,28 @@ function gu(){
       var i=S.envs.findIndex(function(e){return e.id===id;}), j=i, step=a==='up'?-1:1;
       do{j+=step;}while(j>0&&j<S.envs.length&&S.envs[j].archived);
       if(j<1||j>=S.envs.length) return;
-      var t=S.envs[i];S.envs[i]=S.envs[j];S.envs[j]=t; save(); render(); gu();
+      var t=S.envs[i];S.envs[i]=S.envs[j];S.envs[j]=t; touchEnvs(); save(); render(); gu();
     }
-    else if(a==='restoreEnv'){env(id).archived=false; save(); render(); gu(); toast('Envelope is back');}
+    else if(a==='restoreEnv'){env(id).archived=false; touchEnvs(); save(); render(); gu(); toast('Envelope is back');}
     else if(a==='fixStart') openFixStart();
     else if(a==='undoFn'){
       if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again to undo it';b.classList.add('danger');return;}
-      S.fns.pop(); save(); render(); gu(); toast('Back to the fortnight from '+dShort(cur().start));
+      tomb('fns',S.fns.pop().id); save(); render(); gu(); toast('Back to the fortnight from '+dShort(cur().start));
     }
     else if(a==='delCount'||a==='delMove'){
       if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again to delete';b.classList.add('danger');return;}
       var n=Number(id);
-      if(a==='delCount') S.counts=S.counts.filter(function(c){return c.id!==n;});
-      else cur().moves=cur().moves.filter(function(m){return m.id!==n;});
+      if(a==='delCount'){S.counts=S.counts.filter(function(c){return c.id!==n;}); tomb('counts',n);}
+      else {cur().moves=cur().moves.filter(function(m){return m.id!==n;}); tomb('moves',n);}
       save(); render(); gu(); toast('Deleted');
     }
-    else if(a==='setPin'){var v=$('gPin').value.trim(); if(!/^\d{4}$/.test(v)){toast('The PIN needs 4 digits');return;} S.pin=v; save(); gu(); toast('PIN set');}
-    else if(a==='clearPin'){S.pin=''; save(); gu(); toast('PIN removed');}
+    else if(a==='syncNow'){closeM(); pull(); toast('Syncing…');}
+    else if(a==='disc'){
+      if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again: removes the envelopes from this device only';b.classList.add('danger');return;}
+      closeM(); disconnect(false);
+    }
+    else if(a==='setPin'){var v=$('gPin').value.trim(); if(!/^\d{4}$/.test(v)){toast('The PIN needs 4 digits');return;} S.pin=v; S.pinM=Date.now(); save(); gu(); toast('PIN set');}
+    else if(a==='clearPin'){S.pin=''; S.pinM=Date.now(); save(); gu(); toast('PIN removed');}
     else if(a==='copy'){
       var txt=JSON.stringify(S);
       var fb=function(){var tb=$('gRestore');tb.value=txt;tb.focus();tb.select();toast('Select all and copy the text in the box');};
@@ -1113,7 +1127,7 @@ function gu(){
       try{p=JSON.parse(raw);}catch(err){toast('That backup text is not valid');return;}
       if(!valid(p)){toast('That backup text is not valid');return;}
       if(!b.getAttribute('data-sure')){b.setAttribute('data-sure','1');b.textContent='Tap again to replace everything';b.classList.add('danger');return;}
-      S=p; save(); render(); closeM(); toast('Envelopes restored');
+      S=p; saveLocal(); render(); closeM(); toast('Envelopes restored'); if(sess){sync.dirty=true; pushNow(true);}
     }
   }},'wide');
 }
@@ -1148,10 +1162,10 @@ function openEdit(id,back){
       if(isNaN(amt)||isNaN(now)){toast('Check the amounts');return;}
       if(S.envs.some(function(x){return x!==e&&!x.archived&&x.name.toLowerCase()===nm.toLowerCase();})){toast('There\'s already an envelope called '+nm);return;}
       if(isNew){
-        e={id:'e'+(S.nextId++),name:nm,emoji:st.emoji,color:st.color,amount:amt,keep:st.keep,note:st.note.trim()};
-        S.envs.push(e); cur().base[e.id]=now;
+        e={id:'e'+Date.now().toString(36),name:nm,emoji:st.emoji,color:st.color,amount:amt,keep:st.keep,note:st.note.trim()};
+        S.envs.push(e); cur().base[e.id]=now; cur().m=Date.now();
       } else {e.name=nm;e.emoji=st.emoji;e.color=st.color;e.amount=amt;e.keep=st.keep;e.note=st.note.trim();}
-      save(); render(); toast(isNew?'Added '+nm:'Saved'); back?back():closeM();
+      touchEnvs(); save(); render(); toast(isNew?'Added '+nm:'Saved'); back?back():closeM();
     }
   }};
   draw();
@@ -1170,7 +1184,7 @@ function openRemove(id,back){
     else if(a==='cancel'){openEdit(id,back);}
     else if(a==='do'){
       if(L>0) cur().moves.push({id:Date.now(),ts:Date.now(),from:id,to:st.to,amt:L,why:'envelope removed'});
-      e.archived=true; save(); render(); toast(e.name+' removed'+(L>0?', '+fmt(L)+' moved to '+env(st.to).name:'')); back?back():closeM();
+      e.archived=true; touchEnvs(); save(); render(); toast(e.name+' removed'+(L>0?', '+fmt(L)+' moved to '+env(st.to).name:'')); back?back():closeM();
     }
   }};
   draw();
@@ -1192,7 +1206,7 @@ function openFixStart(){
       Array.prototype.forEach.call(document.querySelectorAll('#eMod .money-in'),function(inp){var c=toCents(inp.value); inp.classList.toggle('bad',isNaN(c)); if(isNaN(c)) bad=true; else nb[inp.getAttribute('data-id')]=c;});
       if(bad){toast('Check the red amounts');return;}
       for(var k in nb) f.base[k]=nb[k];
-      f.start=d; save(); render(); gu(); toast('Saved');
+      f.start=d; f.m=Date.now(); save(); render(); gu(); toast('Saved');
     }
   }},'wide');
 }
@@ -1213,14 +1227,14 @@ function setup(){
     '<p class="note">“In it at the start” is what each envelope had on the first day of this fortnight. It\'s how the app works out what\'s been spent. If you\'re not sure, leave it and your first count will show the real amounts.</p>'+
     '<div class="mrow"><button class="mbtn go" data-a="save">Save &amp; start</button></div>';
   openM(h,{sticky:true,click:function(b,a){
-    if(a==='keep'){var e=env(b.getAttribute('data-id'));e.keep=!e.keep;b.classList.toggle('on',e.keep);b.textContent=e.keep?'Keep':'→ Savings';}
+    if(a==='keep'){var e=env(b.getAttribute('data-id'));e.keep=!e.keep;touchEnvs();b.classList.toggle('on',e.keep);b.textContent=e.keep?'Keep':'→ Savings';}
     else if(a==='save'){
       var d=$('suDate').value; if(!isDate(d)){toast('Pick the start date');return;}
       var bad=false, vals=[];
       Array.prototype.forEach.call(document.querySelectorAll('#eMod .money-in'),function(inp){var c=toCents(inp.value);inp.classList.toggle('bad',isNaN(c));if(isNaN(c)) bad=true; vals.push([inp,c]);});
       if(bad){toast('Check the red amounts');return;}
       vals.forEach(function(v){var e=env(v[0].getAttribute('data-id')); if(v[0].getAttribute('data-k')==='amt') e.amount=v[1]; else f.base[e.id]=v[1];});
-      f.start=d; S.setup=true; save(); closeM(); render(); toast('All set! Do a count to see the real amounts.');
+      f.start=d; f.m=Date.now(); touchEnvs(); S.setup=true; save(); closeM(); render(); toast('All set! Do a count to see the real amounts.');
     }
   }},'xwide');
 }
@@ -1279,6 +1293,187 @@ function fitPage(pv){
 }
 window.addEventListener('beforeprint',buildPrint);
 
+// ---------- family sync (Firebase Auth + Firestore, via their REST APIs) ----------
+var FB={apiKey:'AIzaSyAxARu5ENphFdVn5feP4kKmZbTNS2HAWEI',projectId:'budget-envelopes-16279'};
+var SESSKEY='budgetEnvelopes.session', SYNCKEY='budgetEnvelopes.sync';
+var sess=null, idTok=null, idExp=0, sync={ut:null,dirty:false}, busy=false, pushT=null, lastOk=0;
+function fbReady(){return FB.apiKey.indexOf('__')!==0;}
+function lsGet(k){try{var s=localStorage.getItem(k);return s?JSON.parse(s):null;}catch(e){return null;}}
+function lsSet(k,v){try{if(v==null) localStorage.removeItem(k); else localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function slug(n){return String(n).trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
+function famEmail(n){return slug(n)+'@family.budget-envelopes.app';}
+function famPass(n,pin){return 'env-'+pin+'-'+slug(n);}
+function docUrl(){return 'https://firestore.googleapis.com/v1/projects/'+FB.projectId+'/databases/(default)/documents/families/'+sess.uid;}
+function jfetch(url,opt){
+  return fetch(url,opt).then(function(r){return r.text().then(function(t){var j={};try{j=t?JSON.parse(t):{};}catch(e){} return {ok:r.ok,status:r.status,j:j};});});
+}
+function errOf(res){var e=res.j&&res.j.error; var m=(e&&(typeof e==='string'?e:e.message))||('HTTP '+res.status); var x=new Error(m); x.status=e&&e.status; return x;}
+function idt(path,body){
+  return jfetch('https://identitytoolkit.googleapis.com/v1/'+path+'?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(res){if(!res.ok) throw errOf(res); return res.j;});
+}
+function token(){
+  if(idTok&&Date.now()<idExp-60000) return Promise.resolve(idTok);
+  return jfetch('https://securetoken.googleapis.com/v1/token?key='+FB.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(sess.rt)})
+    .then(function(res){
+      if(!res.ok){var e=errOf(res); e.auth=/TOKEN_EXPIRED|USER_DISABLED|USER_NOT_FOUND|INVALID_REFRESH_TOKEN|INVALID_GRANT_TYPE/.test(e.message); throw e;}
+      idTok=res.j.id_token; idExp=Date.now()+Number(res.j.expires_in||3600)*1000;
+      if(res.j.refresh_token&&res.j.refresh_token!==sess.rt){sess.rt=res.j.refresh_token; lsSet(SESSKEY,sess);}
+      return idTok;
+    });
+}
+function fsGet(){
+  return token().then(function(t){return jfetch(docUrl(),{headers:{Authorization:'Bearer '+t}});}).then(function(res){
+    if(res.status===404) return null;
+    if(!res.ok) throw errOf(res);
+    var d=JSON.parse(res.j.fields.data.stringValue); if(!valid(d)) throw new Error('Bad data in the cloud');
+    return {ut:res.j.updateTime,data:d,family:res.j.fields.family&&res.j.fields.family.stringValue};
+  });
+}
+function fsPut(force){
+  var q=force?'':(sync.ut?'?currentDocument.updateTime='+encodeURIComponent(sync.ut):'?currentDocument.exists=false');
+  var body=JSON.stringify({fields:{data:{stringValue:JSON.stringify(S)},family:{stringValue:sess.name}}});
+  return token().then(function(t){return jfetch(docUrl()+q,{method:'PATCH',headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'},body:body});}).then(function(res){
+    if(res.ok) return {ok:true,ut:res.j.updateTime};
+    var st=res.j.error&&res.j.error.status;
+    if(res.status===409||st==='FAILED_PRECONDITION'||st==='ALREADY_EXISTS'||st==='NOT_FOUND') return {ok:false};
+    throw errOf(res);
+  });
+}
+// Merge another device's copy into ours. Keeps our objects so anything open on screen stays valid.
+function merge(L,R){
+  function ids(k){var a=((L.deleted||{})[k]||[]).concat((R.deleted||{})[k]||[]);return a.filter(function(x,i){return a.indexOf(x)===i;});}
+  var del={counts:ids('counts'),moves:ids('moves'),fns:ids('fns')};
+  var lNew=(L.envsM||0)>=(R.envsM||0), A=lNew?L.envs:R.envs, B=lNew?R.envs:L.envs, envs=A.slice();
+  B.forEach(function(e){if(!envs.some(function(x){return x.id===e.id;})) envs.push(e);});
+  var fmap={}; L.fns.forEach(function(f){fmap[f.id]=f;});
+  R.fns.forEach(function(rf){
+    var lf=fmap[rf.id]; if(!lf){fmap[rf.id]=rf;return;}
+    if((rf.m||0)>(lf.m||0)){['start','base','m','swept','sweptFrom','prevLeft'].forEach(function(k){lf[k]=rf[k];});}
+    rf.moves.forEach(function(mv){if(!lf.moves.some(function(x){return x.id===mv.id;})) lf.moves.push(mv);});
+    lf.moves.sort(function(a,b){return a.ts-b.ts;});
+  });
+  var fns=Object.keys(fmap).map(function(k){return fmap[k];}).filter(function(f){return del.fns.indexOf(f.id)<0;});
+  fns.forEach(function(f){f.moves=f.moves.filter(function(mv){return del.moves.indexOf(mv.id)<0;});});
+  fns.sort(function(a,b){return a.start<b.start?-1:a.start>b.start?1:a.id-b.id;});
+  var cmap={}; L.counts.forEach(function(c){cmap[c.id]=c;});
+  R.counts.forEach(function(rc){var lc=cmap[rc.id]; if(!lc){cmap[rc.id]=rc;return;} for(var k in rc.vals) if(!lc.vals[k]) lc.vals[k]=rc.vals[k];});
+  var fidOk={}; fns.forEach(function(f){fidOk[f.id]=1;});
+  var counts=Object.keys(cmap).map(function(k){return cmap[k];}).filter(function(c){return del.counts.indexOf(c.id)<0&&fidOk[c.fid];}).sort(function(a,b){return a.ts-b.ts;});
+  var pinL=(L.pinM||0)>=(R.pinM||0);
+  return {v:1,envs:envs,fns:fns.length?fns:L.fns,counts:counts,pin:pinL?L.pin:R.pin,pinM:Math.max(L.pinM||0,R.pinM||0),
+    setup:!!(L.setup||R.setup),envsM:Math.max(L.envsM||0,R.envsM||0),nextId:Math.max(L.nextId||0,R.nextId||0),deleted:del};
+}
+function setSync(s){
+  var el=$('eSync'); if(!el) return;
+  if(!sess){el.textContent='';return;}
+  var t=lastOk?new Date(lastOk).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}):'';
+  el.className='e-sync '+s;
+  el.textContent=s==='ok'?'☁️ '+sess.name+' · synced '+t:s==='saving'?'☁️ Saving…':s==='offline'?'📴 Offline · changes will sync later':'⚠️ Couldn\'t sync · tap to retry';
+}
+function fail(e){
+  busy=false;
+  if(e&&e.auth){disconnect(true);return;}
+  setSync(navigator.onLine?'error':'offline');
+  try{console.warn('[envelopes sync]',e&&e.message);}catch(x){}
+}
+function schedulePush(){if(!sess) return; clearTimeout(pushT); setSync('saving'); pushT=setTimeout(function(){pushNow(false);},700);}
+function pushNow(force){
+  if(!sess) return Promise.resolve();
+  if(busy){schedulePush();return Promise.resolve();}
+  if(!navigator.onLine){setSync('offline');return Promise.resolve();}
+  busy=true; setSync('saving');
+  var tries=0;
+  function attempt(){
+    return fsPut(force).then(function(res){
+      if(res.ok){sync.ut=res.ut;sync.dirty=false;lsSet(SYNCKEY,sync);busy=false;lastOk=Date.now();setSync('ok');return;}
+      if(++tries>3) throw new Error('Kept clashing with another device');
+      return fsGet().then(function(rem){
+        if(rem){S=merge(S,rem.data); sync.ut=rem.ut; saveLocal(); if(!M) render(); else renderSide();}
+        else sync.ut=null;
+        return attempt();
+      });
+    });
+  }
+  return attempt().catch(fail);
+}
+function pull(){
+  if(!sess||busy||M||!navigator.onLine){if(sess&&!navigator.onLine) setSync('offline');return Promise.resolve();}
+  busy=true;
+  return fsGet().then(function(rem){
+    busy=false;
+    if(!rem){sync.ut=null;sync.dirty=true;lsSet(SYNCKEY,sync);return pushNow(false);}
+    if(rem.ut!==sync.ut){
+      S=sync.dirty?merge(S,rem.data):rem.data; sync.ut=rem.ut; lsSet(SYNCKEY,sync); saveLocal(); render();
+    }
+    if(sync.dirty) return pushNow(false);
+    lastOk=Date.now(); setSync('ok');
+  }).catch(fail);
+}
+function disconnect(expired){
+  lsSet(SESSKEY,null); lsSet(SYNCKEY,null); sess=null; idTok=null; sync={ut:null,dirty:false};
+  try{localStorage.removeItem(KEY);}catch(e){}
+  S=fresh(); render(); setSync(''); showConnect(expired?'Please connect again.':'');
+}
+function showConnect(msg){
+  var st={mode:'join',err:msg||'',busy:false,name:'',pin:'',pin2:''};
+  function draw(){
+    var create=st.mode==='create';
+    var h='<div class="e-mhead"><span class="e-dot" style="background:#17a06b">✉️</span><div><h2>Budget Envelopes</h2><div class="sub">Connect this device to your family group</div></div></div>'+
+      '<p>Your envelopes are saved online and shared by every device in the group. Use the same family name and PIN on each device.</p>'+
+      '<div class="seg"><button data-a="mode" data-m="join" class="'+(create?'':'on')+'">Join our group</button><button data-a="mode" data-m="create" class="'+(create?'on':'')+'">Start a new group</button></div>'+
+      '<label class="fld"><span>Family group name</span><input id="cName" type="text" maxlength="40" autocomplete="off" autocapitalize="words" value="'+esc(st.name)+'" placeholder="e.g. Cook Family"></label>'+
+      '<label class="fld"><span>PIN</span><input id="cPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="off" value="'+esc(st.pin)+'" placeholder="'+(create?'6 digits or more':'Your group PIN')+'"></label>'+
+      (create?'<label class="fld"><span>PIN again</span><input id="cPin2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="off" value="'+esc(st.pin2)+'"></label>'+
+        '<p class="note">Anyone with the family name and PIN can open these envelopes, so use at least 6 digits and keep it in the family.'+(S.setup?' The envelopes already on this device will be uploaded to the new group.':'')+'</p>':'')+
+      (st.err?'<div class="callout" style="border-color:#f3b3b3;background:#fff5f5">'+esc(st.err)+'</div>':'')+
+      '<div class="mrow"><button class="mbtn go" data-a="go"'+(st.busy?' disabled':'')+'>'+(st.busy?'Connecting…':create?'Create group':'Connect')+'</button></div>';
+    openM(h,ctl,'wide');
+  }
+  function grab(){st.name=$('cName').value;st.pin=$('cPin').value;if($('cPin2')) st.pin2=$('cPin2').value;}
+  var ctl={sticky:true,click:function(b,a){
+    if(a==='mode'){grab();st.mode=b.getAttribute('data-m');st.err='';draw();}
+    else if(a==='go'&&!st.busy){
+      grab();
+      var name=st.name.trim().replace(/\s+/g,' '), pin=st.pin.trim(), create=st.mode==='create';
+      if(slug(name).length<2){st.err='Type a family group name.';draw();return;}
+      if(!/^\d{4,10}$/.test(pin)){st.err='The PIN must be 4 to 10 digits.';draw();return;}
+      if(create&&pin.length<6){st.err='For a new group, use at least 6 digits.';draw();return;}
+      if(create&&pin!==st.pin2.trim()){st.err='The two PINs don\'t match.';draw();return;}
+      if(!navigator.onLine){st.err='This device is offline. Connect to the internet first.';draw();return;}
+      st.busy=true;st.err='';draw();
+      idt(create?'accounts:signUp':'accounts:signInWithPassword',{email:famEmail(name),password:famPass(name,pin),returnSecureToken:true}).then(function(j){
+        sess={uid:j.localId,rt:j.refreshToken,name:name}; idTok=j.idToken; idExp=Date.now()+Number(j.expiresIn||3600)*1000; lsSet(SESSKEY,sess);
+        if(create){sync={ut:null,dirty:true}; lsSet(SYNCKEY,sync); return null;}
+        return fsGet();
+      }).then(function(rem){
+        if(rem){
+          try{if(S.setup) localStorage.setItem(KEY+'.beforeJoin',JSON.stringify(S));}catch(e){}
+          if(rem.family){sess.name=rem.family; lsSet(SESSKEY,sess);}
+          S=rem.data; sync={ut:rem.ut,dirty:false}; lsSet(SYNCKEY,sync); saveLocal(); lastOk=Date.now();
+        } else if(!create){sync={ut:null,dirty:true}; lsSet(SYNCKEY,sync);}
+        closeM(); render(); toast('Connected to '+sess.name);
+        if(sync.dirty) pushNow(false); else setSync('ok');
+        if(!S.setup) setup();
+      }).catch(function(e){
+        var m=e.message||'';
+        st.busy=false;
+        st.err=/INVALID_LOGIN_CREDENTIALS|EMAIL_NOT_FOUND|INVALID_PASSWORD|INVALID_EMAIL/.test(m)?'That family name and PIN don\'t match a group. Check both and try again.':
+          /EMAIL_EXISTS/.test(m)?'There\'s already a group with that name. Choose “Join our group”, or pick a different name.':
+          /TOO_MANY_ATTEMPTS/.test(m)?'Too many tries. Wait a few minutes, then try again.':
+          /OPERATION_NOT_ALLOWED|CONFIGURATION_NOT_FOUND|API key/i.test(m)?'Syncing isn\'t switched on yet. Ask a grown-up.':
+          /Failed to fetch|NetworkError|Load failed/i.test(m)?'Couldn\'t reach the internet. Check the Wi-Fi and try again.':'Something went wrong ('+m+'). Try again.';
+        lsSet(SESSKEY,null); sess=null; idTok=null;
+        draw();
+      });
+    }
+  }};
+  draw();
+}
+setInterval(function(){if(!document.hidden) pull();},20000);
+window.addEventListener('online',function(){pull();});
+window.addEventListener('offline',function(){setSync('offline');});
+
 // ---------- wire up ----------
 document.querySelector('.e-tabs').addEventListener('click',function(e){var b=e.target.closest('button[data-view]'); if(b) setView(b.getAttribute('data-view'));});
 $('eView').addEventListener('click',function(e){
@@ -1290,9 +1485,15 @@ $('eMoveBtn').addEventListener('click',function(){openMove();});
 $('eFnBtn').addEventListener('click',askFortnight);
 $('ePrintBtn').addEventListener('click',function(){buildPrint();try{window.print();}catch(e){toast('Printing isn\'t available here');}});
 $('eGrown').addEventListener('click',grownUps);
-document.addEventListener('visibilitychange',function(){if(!document.hidden) render();});
+document.addEventListener('visibilitychange',function(){if(!document.hidden){if(!M) render(); pull();}});
 
-load(); render(); if(!S.setup) setup();
+load(); S.deleted=S.deleted||{counts:[],moves:[],fns:[]};
+sess=lsGet(SESSKEY); sync=lsGet(SYNCKEY)||{ut:null,dirty:false};
+render();
+if(!fbReady()){if(!S.setup) setup();}
+else if(!sess) showConnect();
+else {setSync(sync.dirty?'saving':'ok'); pull(); if(!S.setup) setup();}
+$('eSync').addEventListener('click',function(){pull();});
 window.ENV_DEBUG={get S(){return S;},plan:plan,leftNow:leftNow};
 })();
 </script>
