@@ -1250,14 +1250,6 @@ function buildPrint(){
   h+='<tr class="tot"><th class="d">Total</th>';
   show.forEach(function(c,i){h+='<td class="'+(i===0?'now':'')+'">'+fmt(countTotal(c).t)+'</td>';});
   h+='<td>'+fmt(envs.reduce(function(t,e){return t+(f.base[e.id]||0);},0))+'</td><td>'+fmt(tS)+'</td></tr></tbody></table>';
-  // bars: left vs spent
-  h+='<div class="p-opt1"><div class="p-h2">How full is each envelope?</div><div class="p-key"><i style="background:#6fcf9f"></i>left <i style="background:#eadbc8"></i>spent</div><table class="p-bars">';
-  envs.forEach(function(e){
-    if(e.savings) return;
-    var st=startPlus(f,e.id), L=leftNow(e.id), pct=st>0?Math.max(0,Math.min(1,L/st)):0;
-    h+='<tr><td class="n">'+e.emoji+' '+esc(e.name)+'</td><td><div class="p-bar"><i style="width:'+(pct*100).toFixed(1)+'%;background:'+e.color+'"></i><i style="width:'+((1-pct)*100).toFixed(1)+'%;background:#eadbc8"></i></div></td><td class="v">'+fmt(L)+' left of '+fmt(st)+'</td></tr>';
-  });
-  h+='</table></div>';
   var hist=S.fns.slice(1).slice(-8);
   if(hist.length){
     var W=700,H=150,top=22,bot=30,n=hist.length,max=Math.max.apply(null,hist.map(function(x){return x.swept||0;}).concat([1])),slot=W/n,bw=Math.min(56,slot*.6);
@@ -1279,7 +1271,7 @@ function fitPage(pv){
   var mm=pv.offsetWidth/186;
   function need(){return Math.min(1,(268*mm)/inner.scrollHeight,(186*mm)/inner.scrollWidth);}
   var z=need();
-  ['.p-opt1','.p-opt2'].forEach(function(sel){
+  ['.p-opt2'].forEach(function(sel){
     if(z<0.8){Array.prototype.forEach.call(inner.querySelectorAll(sel),function(el){el.remove();}); z=need();}
   });
   pv.style.cssText='';
