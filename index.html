@@ -505,7 +505,9 @@ function askDone(){
 function finishCount(){
   var cur=state.counts[state.counts.length-1]; if(!cur){closeModal();return;}
   cur.done=true; undoStack=[]; setTake(false);
-  save(); closeModal(); render(); sfx.oink(); toast('Count done and saved!');
+  save(); closeModal(); render(); toast('Count done and saved!');
+  var stg=$('stage'); if(stg&&stg.scrollIntoView){try{stg.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){}}
+  pigTap(); // celebrate: oink, wobble and poop out the total
 }
 function tapMoney(k){
   var d=BY[k];
