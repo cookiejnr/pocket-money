@@ -92,6 +92,11 @@ td.cell{min-width:100px;width:100px;height:61px}
 td.cell .n{font-size:24px;font-weight:600;line-height:1;display:inline-block}
 td.cell .v{font-size:12px;color:var(--muted);margin-top:3px}
 td.cell .z{color:#e3d4c3;font-size:20px}
+td.cell .n.sv{font-size:19px;white-space:nowrap;padding:0 8px}
+.minus .money.sav::after{display:none}
+.savin{display:flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:14px;padding:6px 14px;margin:0 0 16px;font-size:28px;font-weight:600}
+.savin input{border:0;outline:0;font:inherit;font-size:28px;width:100%;background:none;color:var(--ink);-webkit-user-select:text;user-select:text}
+.savin:focus-within{border-color:#2f8f83}
 tbody td.col-active,tbody tr:nth-child(even) td.col-active{background:var(--pinksoft)}
 tbody tr:nth-child(even) td.col-active{background:#ffe9ef}
 .pulse{animation:pulse .35s ease}
@@ -366,6 +371,19 @@ function moneySVG(d,small){
   return noteSVG(d, small?NOTE_SCALE*0.42:NOTE_SCALE, small);
 }
 
+// ---------- savings ----------
+function savSVG(scale){
+  scale=scale||1;
+  return '<svg width="'+(118*scale).toFixed(1)+'" height="'+(50*scale).toFixed(1)+'" viewBox="0 0 118 50" xmlns="http://www.w3.org/2000/svg">'+
+    '<rect x="1" y="1" width="116" height="48" rx="14" fill="#2f8f83" stroke="#1f6b62" stroke-width="2"/>'+
+    '<rect x="11" y="8" width="22" height="6" rx="2" fill="#a0703f"/>'+
+    '<rect x="8" y="13" width="28" height="30" rx="8" fill="#e9fbf8" stroke="#bfe8e1" stroke-width="1.5"/>'+
+    '<circle cx="16" cy="36" r="5" fill="#f2c94c" stroke="#b8901c"/>'+
+    '<circle cx="28" cy="36" r="5" fill="#dfe3e7" stroke="#8f979e"/>'+
+    '<circle cx="22" cy="27" r="5" fill="#f2c94c" stroke="#b8901c"/>'+
+    '<text x="77" y="31" text-anchor="middle" font-family="Fredoka,system-ui,sans-serif" font-weight="700" font-size="17" fill="#fff">Savings</text></svg>';
+}
+
 // ---------- storage ----------
 var KEY='oliverPocketMoney.v1';
 var state={counts:[]};
@@ -385,6 +403,7 @@ function valid(p){
   if(!p||!Array.isArray(p.counts)) return false;
   return p.counts.every(function(c){
     if(!c||typeof c.date!=='string'||isNaN(new Date(c.date))||!c.items||typeof c.items!=='object') return false;
+    if(c.savings!==undefined&&!(Number.isInteger(c.savings)&&c.savings>=0)) return false;
     return Object.keys(c.items).every(function(k){var v=c.items[k];return BY[k]&&Number.isInteger(v)&&v>=0;});
   });
 }
@@ -392,7 +411,7 @@ function valid(p){
 // ---------- helpers ----------
 function $(id){return document.getElementById(id);}
 function fmt(cents){return '$'+(cents/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
-function total(c){var t=0;DENOMS.forEach(function(d){t+=(c.items[d.k]||0)*d.c;});return t;}
+function total(c){var t=0;DENOMS.forEach(function(d){t+=(c.items[d.k]||0)*d.c;});return t+(c.savings||0);}
 function fmtDate(iso){
   var d=new Date(iso), now=new Date();
   var o={weekday:'short',day:'numeric',month:'short'};
@@ -432,6 +451,13 @@ function render(){
     });
     h+='<td class="fill"></td></tr>';
   });
+  h+='<tr><th class="denom"><button class="money sav" aria-label="Savings">'+savSVG()+'</button></th>';
+  cols.forEach(function(c,i){
+    var v=c.savings||0;
+    h+='<td class="cell'+(i===0?' col-active':'')+'" '+(i===0?'id="cell-sav"':'')+'>'+
+      (v?'<div class="n sv">'+fmt(v)+'</div>':'<div class="z">–</div>')+'</td>';
+  });
+  h+='<td class="fill"></td></tr>';
   h+='<tr class="total"><th>Total</th>';
   cols.forEach(function(c,i){
     var prev=cols[i+1];
@@ -472,11 +498,37 @@ function tapMoney(k){
   save(); render(); pulse('cell-'+d.c); pulse('activeTotal');
   var btn=document.querySelector('.money[data-k="'+k+'"]'); if(btn) btn.classList.add('pop');
 }
+function editSavings(){
+  var cur=state.counts[state.counts.length-1];
+  if(!cur){toast('Tap New count first!');var nb=$('newCount');nb.classList.remove('nudge');void nb.offsetWidth;nb.classList.add('nudge');return;}
+  var v=cur.savings||0;
+  openModal('<h2>Savings</h2><p>How much is in Oliver’s savings? Type the amount in dollars.</p>'+
+    '<div class="savin"><span>$</span><input id="savBox" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" value="'+(v?(v/100).toFixed(2):'')+'"></div>'+
+    '<div class="mrow"><button class="mbtn" data-a="cancel">Cancel</button><button class="mbtn go" data-a="savset">Save</button></div>');
+  var box=$('savBox');
+  box.addEventListener('keydown',function(e){if(e.key==='Enter') setSavings();});
+  setTimeout(function(){try{box.focus();box.select();}catch(e){}},60);
+}
+function setSavings(){
+  var cur=state.counts[state.counts.length-1]; if(!cur){closeModal();return;}
+  var raw=$('savBox').value.replace(/[$,\s]/g,'');
+  if(raw==='') raw='0';
+  if(!/^\d+(\.\d{0,2})?$/.test(raw)){toast('Type an amount like 25 or 25.50');return;}
+  var cents=Math.round(parseFloat(raw)*100), prev=cur.savings||0;
+  if(cents) cur.savings=cents; else delete cur.savings;
+  if(cents!==prev) undoStack.push({id:cur.id,k:'savings',prev:prev});
+  save(); closeModal(); render(); pulse('cell-sav'); pulse('activeTotal');
+  toast(cents?'Savings set to '+fmt(cents):'Savings cleared');
+}
 function pulse(id){var el=$(id); if(!el)return; var t=el.classList.contains('cell')?el.firstElementChild:el; if(!t)return; t.classList.remove('pulse'); void t.offsetWidth; t.classList.add('pulse');}
 function undo(){
   var cur=state.counts[state.counts.length-1];
   var u=undoStack.pop();
   if(!u||!cur||u.id!==cur.id){undoStack=[];toast('Nothing to undo');return;}
+  if(u.k==='savings'){
+    if(u.prev) cur.savings=u.prev; else delete cur.savings;
+    save(); render(); pulse('cell-sav'); toast('Undone: savings back to '+fmt(u.prev)); return;
+  }
   var n=(cur.items[u.k]||0)-u.delta;
   if(n>0) cur.items[u.k]=n; else delete cur.items[u.k];
   save(); render(); pulse('cell-'+BY[u.k].c); toast('Undone: '+(u.delta>0?'took off ':'put back ')+u.k);
@@ -489,11 +541,14 @@ $('overlay').addEventListener('click',function(e){if(e.target===this)closeModal(
 
 function askNewCount(){
   var today=fmtDate(new Date().toISOString());
-  openModal('<h2>Start a new count?</h2><p>A new column for <b>'+today+'</b> will appear. Then tap each coin and note as you count it.</p>'+
+  openModal('<h2>Start a new count?</h2><p>A new column for <b>'+today+'</b> will appear. Then tap each coin and note as you count it. Savings carries over from last time.</p>'+
     '<div class="mrow"><button class="mbtn" data-a="cancel">Cancel</button><button class="mbtn go" data-a="start">Start counting</button></div>');
 }
 function startCount(){
-  state.counts.push({id:Date.now(),date:new Date().toISOString(),items:{}});
+  var last=state.counts[state.counts.length-1];
+  var nc={id:Date.now(),date:new Date().toISOString(),items:{}};
+  if(last&&last.savings) nc.savings=last.savings;
+  state.counts.push(nc);
   undoStack=[]; takeAway=false; var tb=$('takeAway'); tb.classList.remove('on'); tb.textContent='Take away';
   save(); closeModal(); render(); $('board').scrollLeft=0;
   toast('New count started. Tap the money!');
@@ -516,6 +571,7 @@ $('modal').addEventListener('click',function(e){
   var a=b.getAttribute('data-a');
   if(a==='cancel') closeModal();
   else if(a==='start') startCount();
+  else if(a==='savset') setSavings();
   else if(a==='del'){
     if(b.getAttribute('data-sure')){
       var id=Number(b.getAttribute('data-id'));
@@ -647,6 +703,10 @@ function buildPrint(){
       h+=n?'<td class="'+(i===0?'now':'')+'"><div class="n">'+n+'</div><div class="v">'+fmt(n*d.c)+'</div></td>':'<td class="z'+(i===0?' now':'')+'">–</td>';});
     h+='</tr>';
   });
+  h+='<tr><th class="d"><span class="ic">'+savSVG(0.5)+'</span>Savings</th>';
+  cols.forEach(function(c,i){var v=c.savings||0;
+    h+=v?'<td class="'+(i===0?'now':'')+'"><div class="n">'+fmt(v)+'</div></td>':'<td class="z'+(i===0?' now':'')+'">–</td>';});
+  h+='</tr>';
   h+='<tr class="tot"><th class="d">Total</th>';
   cols.forEach(function(c,i){h+='<td class="'+(i===0?'now':'')+'">'+fmt(total(c))+'</td>';});
   h+='</tr><tr class="chg"><th class="d">Change</th>';
@@ -674,7 +734,7 @@ function printNow(){
 window.addEventListener('beforeprint',buildPrint);
 
 // ---------- wire up ----------
-$('board').addEventListener('click',function(e){var b=e.target.closest('.money'); if(b) tapMoney(b.getAttribute('data-k'));});
+$('board').addEventListener('click',function(e){var b=e.target.closest('.money'); if(!b) return; if(b.classList.contains('sav')) editSavings(); else tapMoney(b.getAttribute('data-k'));});
 $('pig').addEventListener('click',pigTap);
 $('newCount').addEventListener('click',askNewCount);
 $('undo').addEventListener('click',undo);
